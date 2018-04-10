@@ -44,6 +44,10 @@ func main() {
 				Name:  "package, pkg",
 				Usage: "Package name",
 			},
+			cli.StringSliceFlag{
+				Name:  "ignore, i",
+				Usage: "Ignore file name",
+			},
 			cli.BoolTFlag{
 				Name:  "include-docs",
 				Usage: "Include API documentation in generated source code",
@@ -81,8 +85,9 @@ func run(ctx *cli.Context) error {
 		Logger:     logger,
 		FileSystem: embedo.Dir(dir),
 		Config: &embedo.GeneratorConfig{
-			Recurive:    ctx.Bool("recursive"),
-			InlcudeDocs: ctx.BoolT("include-docs"),
+			IgnorePatterns: ctx.StringSlice("ignore"),
+			Recurive:       ctx.Bool("recursive"),
+			InlcudeDocs:    ctx.BoolT("include-docs"),
 		},
 	}
 

@@ -64,6 +64,22 @@ var _ = Describe("Embedder", func() {
 		Expect(string(data)).NotTo(ContainSubstring("commands.sql"))
 	})
 
+	Context("when the commands.sql is ignored", func() {
+		BeforeEach(func() {
+			args = append(args, "-i", "*.sql")
+		})
+
+		It("does not generate embedded resource for it", func() {
+			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(session).Should(gexec.Exit(0))
+
+			Expect(session.Out).NotTo(gbytes.Say("Embedding 'main.sql'"))
+			Expect(session.Out).NotTo(gbytes.Say("Embedding 'command/commands.sql'"))
+			Expect(res).NotTo(BeARegularFile())
+		})
+	})
+
 	Context("when the documentation is disabled", func() {
 		BeforeEach(func() {
 			args = append(args, "-include-docs=false")

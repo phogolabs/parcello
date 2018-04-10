@@ -25,6 +25,8 @@ type FileSystem interface {
 
 // GeneratorConfig controls how the code generation happens
 type GeneratorConfig struct {
+	// IgnorePatterns provides a list of all files that has to be ignored
+	IgnorePatterns []string
 	// Recurive enables embedding the resources recursively
 	Recurive bool
 	// InlcudeDocs determines whether to include documentation
@@ -47,6 +49,7 @@ func (g *Generator) Generate(pkg string) error {
 		g.Logger = ioutil.Discard
 	}
 
+	processed := 0
 	buffer := &bytes.Buffer{}
 
 	if g.Config.InlcudeDocs {
@@ -79,9 +82,13 @@ func (g *Generator) Generate(pkg string) error {
 			return nil
 		}
 
-		matched, err := filepath.Match("*.go", info.Name())
-		if err != nil || matched {
-			return err
+		ignore := append(g.Config.IgnorePatterns, "*.go")
+
+		for _, pattern := range ignore {
+			matched, err := filepath.Match(pattern, info.Name())
+			if err != nil || matched {
+				return err
+			}
 		}
 
 		fmt.Fprintln(g.Logger, fmt.Sprintf("Embedding '%s'", path))
@@ -104,6 +111,8 @@ func (g *Generator) Generate(pkg string) error {
 
 		fmt.Fprintf(buffer, "  resource.Add(\"%s\", %s)", path, g.encode(data))
 		fmt.Fprintln(buffer)
+
+		processed = processed + 1
 		return nil
 	})
 
@@ -113,6 +122,10 @@ func (g *Generator) Generate(pkg string) error {
 
 	if err != nil {
 		return err
+	}
+
+	if processed == 0 {
+		return nil
 	}
 
 	if err := g.format(buffer); err != nil {
