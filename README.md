@@ -2,7 +2,8 @@
 
 [![Documentation][godoc-img]][godoc-url]
 ![License][license-img]
-[![Build Status](https://travis-ci.org/phogolabs/embedo.svg?branch=master)](https://travis-ci.org/phogolabs/embedo)
+[![Build Status][travis-img]][travis-url]
+[![Coverage][coveralls-img]][coveralls-url]
 
 An embeddable resource manager for Golang
 
@@ -84,6 +85,10 @@ You can check working example in our [GOM package](https://github.com/phogolabs/
 We are welcome to any contributions. Just fork the
 [project](https://github.com/phogolabs/embedo).
 
+[coveralls-url]: https://coveralls.io/github/phogolabs/embedo
+[coveralls-img]: https://coveralls.io/repos/github/phogolabs/embedo/badge.svg?branch=master
+[travis-img]: https://travis-ci.org/phogolabs/embedo.svg?branch=master
+[travis-url]: https://travis-ci.org/phogolabs/embedo
 [embedo-url]: https://github.com/phogolabs/embedo
 [godoc-url]: https://godoc.org/github.com/phogolabs/embedo
 [godoc-img]: https://godoc.org/github.com/phogolabs/embedo?status.svg
