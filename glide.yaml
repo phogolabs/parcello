@@ -1,0 +1,17 @@
+package: github.com/phogolabs/embedo
+import:
+- package: github.com/urfave/cli
+  version: v1.20.0
+- package: golang.org/x/tools
+  subpackages:
+  - imports
+testImport:
+- package: github.com/mattn/go-sqlite3
+  version: v1.6.0
+- package: github.com/onsi/ginkgo
+  version: v1.4.0
+- package: github.com/onsi/gomega
+  version: v1.3.0
+  subpackages:
+  - gbytes
+  - gexec
