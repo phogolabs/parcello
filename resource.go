@@ -32,10 +32,30 @@ func Open(resouce *Resource) *ResourceManager {
 
 	for key, data := range resouce.items {
 		path := split(key)
-		add(path, data, root)
+		node := add(path, root)
+
+		if node != root && node.dir && len(node.children) == 0 {
+			node.dir = false
+			node.content = data
+		}
 	}
 
 	return &ResourceManager{root: root}
+}
+
+// Group returns a sub-manager for given path, if the path does not exist
+// it will return a new resource manager with empty content
+func (fs *ResourceManager) Group(name string) *ResourceManager {
+	if node := find(split(name), fs.root); node != nil {
+		if node.dir {
+			return &ResourceManager{root: node}
+		}
+	}
+
+	return &ResourceManager{root: &Node{
+		name: "/",
+		dir:  true,
+	}}
 }
 
 // Open opens an embeded resource for read
@@ -65,17 +85,16 @@ func (fs *ResourceManager) Walk(dir string, fn filepath.WalkFunc) error {
 	return fmt.Errorf("Directory '%s' not found", dir)
 }
 
-func add(path []string, content []byte, node *Node) {
-	if len(path) == 0 {
-		return
+func add(path []string, node *Node) *Node {
+	if len(path) == 0 || !node.dir {
+		return node
 	}
 
 	name := path[0]
 
 	for _, child := range node.children {
 		if child.name == name {
-			add(path[1:], content, child)
-			return
+			return add(path[1:], child)
 		}
 	}
 
@@ -85,13 +104,7 @@ func add(path []string, content []byte, node *Node) {
 	}
 
 	node.children = append(node.children, child)
-
-	if len(path) == 1 {
-		child.dir = false
-		child.content = content
-	}
-
-	add(path[1:], content, child)
+	return add(path[1:], child)
 }
 
 func split(path string) []string {

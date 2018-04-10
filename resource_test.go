@@ -24,12 +24,53 @@ var _ = Describe("Resource", func() {
 		manager = embedo.Open(resource)
 	})
 
+	Describe("Group", func() {
+		BeforeEach(func() {
+			resource.Add("/root/etc/passwd", []byte("swordfish"))
+		})
+
+		It("returns a valid sub-manager", func() {
+			group := manager.Group("/root")
+
+			file, err := group.Open("/etc/passwd")
+			Expect(file).NotTo(BeNil())
+			Expect(err).NotTo(HaveOccurred())
+
+			data, err := ioutil.ReadAll(file)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(data)).To(Equal("swordfish"))
+		})
+
+		Context("when group is a file not a directory", func() {
+			It("returns a valid sub-manager", func() {
+				group := manager.Group("/root/etc/passwd")
+
+				file, err := group.Open("/")
+				Expect(file).To(BeNil())
+				Expect(err).To(MatchError("Cannot open directory '/'"))
+			})
+		})
+	})
+
 	Describe("Open", func() {
 		Context("when the resource is empty", func() {
 			It("returns an error", func() {
 				file, err := manager.Open("migration.sql")
 				Expect(file).To(BeNil())
 				Expect(err).To(MatchError("File 'migration.sql' not found"))
+			})
+		})
+
+		Describe("when there is an invalid resource", func() {
+			BeforeEach(func() {
+				resource.Add("/root/etc", []byte("hello"))
+				resource.Add("/root/etc/passwd", []byte("swordfish"))
+			})
+
+			It("does not embed it", func() {
+				file, err := manager.Open("/root/etc/passwd")
+				Expect(file).To(BeNil())
+				Expect(err).To(MatchError("File '/root/etc/passwd' not found"))
 			})
 		})
 
@@ -90,7 +131,7 @@ var _ = Describe("Resource", func() {
 			})
 		})
 
-		FContext("when the resource has hierarchy of directories and files", func() {
+		Context("when the resource has hierarchy of directories and files", func() {
 			BeforeEach(func() {
 				resource.Add("/migration.sql", []byte("hello"))
 				resource.Add("/root/etc/passwd", []byte("swordfish"))
