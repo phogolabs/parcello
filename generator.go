@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/tools/imports"
@@ -24,12 +25,16 @@ type FileSystem interface {
 
 // GeneratorConfig controls how the code generation happens
 type GeneratorConfig struct {
-	// InlcudeDoc determines whether to include documentation
-	InlcudeDoc bool
+	// Recurive enables embedding the resources recursively
+	Recurive bool
+	// InlcudeDocs determines whether to include documentation
+	InlcudeDocs bool
 }
 
 // Generator generates an embedable resource
 type Generator struct {
+	// Logger prints each step of generation
+	Logger io.Writer
 	// FileSystem provides with primitives to work with the underlying file system
 	FileSystem FileSystem
 	// Config controls how the code generation happens
@@ -38,9 +43,13 @@ type Generator struct {
 
 // Generate generates an embedable resource for given directory
 func (g *Generator) Generate(pkg string) error {
+	if g.Logger == nil {
+		g.Logger = ioutil.Discard
+	}
+
 	buffer := &bytes.Buffer{}
 
-	if g.Config.InlcudeDoc {
+	if g.Config.InlcudeDocs {
 		fmt.Fprintln(buffer, "// File contains an embedded resources")
 		fmt.Fprintln(buffer, "// Auto-generated at", time.Now().Format(time.UnixDate))
 	}
@@ -48,7 +57,7 @@ func (g *Generator) Generate(pkg string) error {
 	fmt.Fprintf(buffer, "package %s", pkg)
 	fmt.Fprintln(buffer)
 
-	if g.Config.InlcudeDoc {
+	if g.Config.InlcudeDocs {
 		fmt.Fprintln(buffer, "// ResourceManager contains the embeded resources for this package")
 	}
 
@@ -64,6 +73,9 @@ func (g *Generator) Generate(pkg string) error {
 		}
 
 		if info.IsDir() {
+			if !g.Config.Recurive && path != "." {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 
@@ -71,6 +83,8 @@ func (g *Generator) Generate(pkg string) error {
 		if err != nil || matched {
 			return err
 		}
+
+		fmt.Fprintln(g.Logger, fmt.Sprintf("Embedding '%s'", path))
 
 		file, err := g.FileSystem.OpenFile(path, os.O_RDONLY, 0)
 		if err != nil {
@@ -88,12 +102,12 @@ func (g *Generator) Generate(pkg string) error {
 			return err
 		}
 
-		fmt.Fprintf(buffer, "  resource.Add(\"%s\", []byte(%+q))", path, g.encode(data))
-		fmt.Fprintln(buffer)
+		fmt.Fprintf(buffer, "  resource.Add(\"%s\", %s)", path, g.encode(data))
 		fmt.Fprintln(buffer)
 		return nil
 	})
 
+	fmt.Fprintln(buffer)
 	fmt.Fprintln(buffer, "  ResourceManager = embedo.Open(resource)")
 	fmt.Fprintln(buffer, "}")
 
@@ -109,19 +123,13 @@ func (g *Generator) Generate(pkg string) error {
 }
 
 func (g *Generator) encode(data []byte) string {
-	hex := "0123456789abcdef"
-	buffer := []byte(`\x00`)
-	encoded := []byte{}
+	array := []string{}
 
-	for _, b := range data {
-		buffer[2] = hex[b/16]
-		buffer[3] = hex[b%16]
-		encoded = append(encoded, buffer...)
+	for _, bit := range data {
+		array = append(array, fmt.Sprintf("%d", bit))
 	}
 
-	encoded = bytes.Replace(encoded, []byte("`"), []byte("`+\"`\"+`"), -1)
-	encoded = bytes.Replace(encoded, []byte("\xEF\xBB\xBF"), []byte("`+\"\\xEF\\xBB\\xBF\"+`"), -1)
-	return string(encoded)
+	return fmt.Sprintf("[]byte{%s}", strings.Join(array, ","))
 }
 
 func (g *Generator) format(buffer *bytes.Buffer) error {

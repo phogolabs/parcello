@@ -2,6 +2,7 @@ package embedo_test
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -24,10 +25,13 @@ var _ = Describe("Generator", func() {
 		generator = &embedo.Generator{
 			FileSystem: embedo.Dir(dir),
 			Config: &embedo.GeneratorConfig{
-				InlcudeDoc: false,
+				Recurive:    true,
+				InlcudeDocs: false,
 			},
 		}
 
+		Expect(os.MkdirAll(filepath.Join(dir, "sub"), 0755)).To(Succeed())
+		Expect(ioutil.WriteFile(filepath.Join(dir, "sub", "more.sql"), []byte("more"), 0600)).To(Succeed())
 		Expect(ioutil.WriteFile(filepath.Join(dir, "script.sql"), []byte("hello"), 0600)).To(Succeed())
 	})
 
@@ -39,13 +43,33 @@ var _ = Describe("Generator", func() {
 
 		data, err := ioutil.ReadFile(path)
 		Expect(err).NotTo(HaveOccurred())
+		Expect(string(data)).To(ContainSubstring("more.sql"))
 		Expect(string(data)).To(ContainSubstring("script.sql"))
 		Expect(string(data)).NotTo(ContainSubstring("// Auto-generated"))
 	})
 
+	Context("when the recursion is disabled", func() {
+		BeforeEach(func() {
+			generator.Config.Recurive = false
+		})
+
+		It("generates the embedded resources on root level successfully", func() {
+			Expect(generator.Generate("resource")).To(Succeed())
+
+			path := filepath.Join(dir, "resource.go")
+			Expect(path).To(BeARegularFile())
+
+			data, err := ioutil.ReadFile(path)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(data)).NotTo(ContainSubstring("more.sql"))
+			Expect(string(data)).To(ContainSubstring("script.sql"))
+			Expect(string(data)).NotTo(ContainSubstring("// Auto-generated"))
+		})
+	})
+
 	Context("when the documentation should be included", func() {
 		BeforeEach(func() {
-			generator.Config.InlcudeDoc = true
+			generator.Config.InlcudeDocs = true
 		})
 
 		It("generates the embedded resources successfully", func() {
