@@ -47,6 +47,33 @@ You can read the content in the following way:
 ```golang
 file, err := database.ResourceManager.Open("your_subdirectory/your_file.")
 ```
+## Command Line Interface
+
+```console
+$ embedo -h
+
+NAME:
+   embedder - Golang Resource Embedder
+
+USAGE:
+   embedder [global options]
+
+VERSION:
+   0.1
+
+COMMANDS:
+     help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --quite, -q                   Disable logging
+   --recursive, -r               Embed the resources recursively
+   --dir value, -d value         Path to directory
+   --package value, --pkg value  Package name
+   --ignore value, -i value      Ignore file name
+   --include-docs                Include API documentation in generated source code
+   --help, -h                    show help
+   --version, -v                 print the version
+ ```
 
 ## Example
 
