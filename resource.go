@@ -8,13 +8,16 @@ import (
 	"strings"
 )
 
+// Binary represents a resource blob content
+type Binary = []byte
+
 // Resource represents a single resource
 type Resource struct {
 	items map[string][]byte
 }
 
 // Add data to the resource
-func (r *Resource) Add(key string, data []byte) {
+func (r *Resource) Add(key string, data Binary) {
 	if r.items == nil {
 		r.items = make(map[string][]byte)
 	}
