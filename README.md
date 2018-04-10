@@ -48,6 +48,10 @@ You can read the content in the following way:
 file, err := database.ResourceManager.Open("your_subdirectory/your_file.")
 ```
 
+## Example
+
+You can check working example in our [GOM package](https://github.com/phogolabs/gom/tree/master/example).
+
 ## Contributing
 
 We are welcome to any contributions. Just fork the
