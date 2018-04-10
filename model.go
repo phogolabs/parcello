@@ -6,10 +6,14 @@ import (
 	"time"
 )
 
+// Binary represents a resource blob content
+type Binary = []byte
+
+// Node represents a hierarchy node in the resource manager
 type Node struct {
 	name     string
 	dir      bool
-	content  []byte
+	content  Binary
 	children []*Node
 }
 
@@ -68,4 +72,9 @@ func (b *BufferCloser) Write(p []byte) (n int, err error) {
 // Close closes the buffer (noop).
 func (buff *BufferCloser) Close() error {
 	return nil
+}
+
+type item struct {
+	key  string
+	data Binary
 }

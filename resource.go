@@ -5,23 +5,18 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
-// Binary represents a resource blob content
-type Binary = []byte
-
 // Resource represents a single resource
 type Resource struct {
-	items map[string][]byte
+	items []item
 }
 
 // Add data to the resource
 func (r *Resource) Add(key string, data Binary) {
-	if r.items == nil {
-		r.items = make(map[string][]byte)
-	}
-	r.items[key] = data
+	r.items = append(r.items, item{key: key, data: data})
 }
 
 // ResourceManager represents a virtual in memory file system
@@ -33,13 +28,13 @@ type ResourceManager struct {
 func Open(resouce *Resource) *ResourceManager {
 	root := &Node{name: "/", dir: true}
 
-	for key, data := range resouce.items {
-		path := split(key)
+	for _, item := range resouce.items {
+		path := split(item.key)
 		node := add(path, root)
 
 		if node != root && node.dir && len(node.children) == 0 {
 			node.dir = false
-			node.content = data
+			node.content = item.data
 		}
 	}
 
@@ -94,6 +89,10 @@ func add(path []string, node *Node) *Node {
 	}
 
 	name := path[0]
+
+	sort.Slice(node.children, func(i, j int) bool {
+		return node.children[i].name < node.children[j].name
+	})
 
 	for _, child := range node.children {
 		if child.name == name {
