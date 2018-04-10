@@ -45,7 +45,7 @@ subdirectories.
 You can read the content in the following way:
 
 ```golang
-file, err := database.ResourceManager.Open("your_subdirectory/your_file.")
+file, err := database.ResourceManager.Open("your_sub_directory_name/your_file_name")
 ```
 ## Command Line Interface
 
