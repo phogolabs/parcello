@@ -1,0 +1,18 @@
+language: go
+go:
+  - 1.9.x
+
+before_script:
+  - mysql -e 'CREATE DATABASE gom;'
+  - psql -c 'CREATE DATABASE gom;' -U postgres
+
+install:
+  - go get github.com/onsi/gomega
+  - go get github.com/onsi/ginkgo
+  - go get github.com/Masterminds/glide
+  - go install github.com/onsi/ginkgo/ginkgo
+  - go install github.com/Masterminds/glide
+  - export PATH=$PATH:$HOME/gopath/bin
+  - glide install
+
+script: ginkgo -r
