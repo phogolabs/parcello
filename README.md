@@ -51,7 +51,7 @@ file, err := database.ResourceManager.Open("your_subdirectory/your_file.")
 ## Contributing
 
 We are welcome to any contributions. Just fork the
-[project](https://github.com/phogolabs/gom).
+[project](https://github.com/phogolabs/embedo).
 
 [embedo-url]: https://github.com/phogolabs/embedo
 [godoc-url]: https://godoc.org/github.com/phogolabs/embedo
