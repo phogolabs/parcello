@@ -17,10 +17,10 @@ const (
 
 func main() {
 	app := &cli.App{
-		Name:                 "embedder",
-		HelpName:             "embedder",
+		Name:                 "embedo",
+		HelpName:             "embedo",
 		Usage:                "Golang Resource Embedder",
-		UsageText:            "embedder [global options]",
+		UsageText:            "embedo [global options]",
 		Version:              "0.1",
 		BashComplete:         cli.DefaultAppComplete,
 		EnableBashCompletion: true,

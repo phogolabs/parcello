@@ -53,10 +53,10 @@ file, err := database.ResourceManager.Open("your_sub_directory_name/your_file_na
 $ embedo -h
 
 NAME:
-   embedder - Golang Resource Embedder
+   embedo - Golang Resource Embedder
 
 USAGE:
-   embedder [global options]
+   embedo [global options]
 
 VERSION:
    0.1
