@@ -30,7 +30,7 @@ var _ = Describe("Embedder", func() {
 		dir, err = ioutil.TempDir("", "gom")
 		Expect(err).To(BeNil())
 
-		cmd = exec.Command(embedoPath, append(args, "-d", "./database")...)
+		cmd = exec.Command(embedoPath, append(args, "-d", "./database", "-pkg", "resource")...)
 		cmd.Dir = dir
 
 		path := filepath.Join(cmd.Dir, "/database")
@@ -135,7 +135,20 @@ var _ = Describe("Embedder", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(session).Should(gexec.Exit(101))
 
-			Expect(session.Err).To(gbytes.Say("Package directory is not provided"))
+			Expect(session.Err).To(gbytes.Say("Directory is not provided"))
+			Expect(res).NotTo(BeARegularFile())
+		})
+	})
+
+	Context("when the package is not provided", func() {
+		It("returns an error", func() {
+			cmd = exec.Command(embedoPath, append(args, "-d", "./database")...)
+
+			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(session).Should(gexec.Exit(101))
+
+			Expect(session.Err).To(gbytes.Say("Package name is not provided"))
 			Expect(res).NotTo(BeARegularFile())
 		})
 	})

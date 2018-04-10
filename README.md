@@ -29,7 +29,7 @@ following comment:
 // Package database contains the database artefacts of GOM as embedded resource
 package database
 
-//go:generate embedo -r -d .
+//go:generate embedo -r -pkg $GOPACKAGE -d .
 ```
 
 When you run:

@@ -37,8 +37,12 @@ func main() {
 				Usage: "Embed the resources recursively",
 			},
 			cli.StringFlag{
-				Name:  "package-dir, d",
-				Usage: "Path to package directory",
+				Name:  "dir, d",
+				Usage: "Path to directory",
+			},
+			cli.StringFlag{
+				Name:  "package, pkg",
+				Usage: "Package name",
 			},
 			cli.BoolTFlag{
 				Name:  "include-docs",
@@ -51,14 +55,19 @@ func main() {
 }
 
 func run(ctx *cli.Context) error {
-	dir := ctx.String("package-dir")
-	logger := ioutil.Discard
-
+	dir := ctx.String("dir")
 	if dir == "" {
-		err := fmt.Errorf("Package directory is not provided")
+		err := fmt.Errorf("Directory is not provided")
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
+	pkg := ctx.String("pkg")
+	if pkg == "" {
+		err := fmt.Errorf("Package name is not provided")
+		return cli.NewExitError(err.Error(), ErrCodeArg)
+	}
+
+	logger := ioutil.Discard
 	if !ctx.Bool("quite") {
 		logger = os.Stdout
 	}
@@ -77,7 +86,7 @@ func run(ctx *cli.Context) error {
 		},
 	}
 
-	if err := generator.Generate(filepath.Base(dir)); err != nil {
+	if err := generator.Generate(pkg); err != nil {
 		return err
 	}
 
