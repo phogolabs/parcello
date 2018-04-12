@@ -1,4 +1,4 @@
-package: github.com/phogolabs/embedo
+package: github.com/phogolabs/parcel
 import:
 - package: github.com/urfave/cli
   version: v1.20.0
