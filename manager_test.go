@@ -141,8 +141,8 @@ var _ = Describe("Manager", func() {
 				Expect(paths[6]).To(Equal("/resource/templates"))
 				Expect(paths[7]).To(Equal("/resource/templates/html"))
 				Expect(paths[8]).To(Equal("/resource/templates/html/index.html"))
-				Expect(paths[9]).To(Equal("/resource/templates/xml"))
-				Expect(paths[10]).To(Equal("/resource/templates/xml/schema.xml"))
+				Expect(paths[9]).To(Equal("/resource/templates/yml"))
+				Expect(paths[10]).To(Equal("/resource/templates/yml/schema.yml"))
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -175,8 +175,8 @@ var _ = Describe("Manager", func() {
 				Expect(paths[0]).To(Equal("/resource/templates"))
 				Expect(paths[1]).To(Equal("/resource/templates/html"))
 				Expect(paths[2]).To(Equal("/resource/templates/html/index.html"))
-				Expect(paths[3]).To(Equal("/resource/templates/xml"))
-				Expect(paths[4]).To(Equal("/resource/templates/xml/schema.xml"))
+				Expect(paths[3]).To(Equal("/resource/templates/yml"))
+				Expect(paths[4]).To(Equal("/resource/templates/yml/schema.yml"))
 				Expect(err).NotTo(HaveOccurred())
 			})
 

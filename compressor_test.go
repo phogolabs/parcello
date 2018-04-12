@@ -54,7 +54,7 @@ var _ = Describe("TarGZipCompressor", func() {
 
 		header, err = reader.Next()
 		Expect(err).To(BeNil())
-		Expect(header.Name).To(Equal("resource/templates/xml/schema.xml"))
+		Expect(header.Name).To(Equal("resource/templates/yml/schema.yml"))
 
 		header, err = reader.Next()
 		Expect(header).To(BeNil())
@@ -88,7 +88,7 @@ var _ = Describe("TarGZipCompressor", func() {
 
 			header, err = reader.Next()
 			Expect(err).To(BeNil())
-			Expect(header.Name).To(Equal("resource/templates/xml/schema.xml"))
+			Expect(header.Name).To(Equal("resource/templates/yml/schema.yml"))
 
 			header, err = reader.Next()
 			Expect(header).To(BeNil())
