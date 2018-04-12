@@ -1,69 +1,99 @@
-package embedo
+package parcel
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
+	"sync"
 )
 
-// Resource represents a single resource
-type Resource struct {
-	items []item
-}
+var _ FileSystem = &Manager{}
 
-// Add data to the resource
-func (r *Resource) Add(key string, data Binary) {
-	r.items = append(r.items, item{key: key, data: data})
-}
-
-// ResourceManager represents a virtual in memory file system
-type ResourceManager struct {
+// Manager represents a virtual in memory file system
+type Manager struct {
+	rw   sync.RWMutex
 	root *Node
 }
 
-// Open creates an instance of ResourceManager
-func Open(resouce *Resource) *ResourceManager {
-	root := &Node{name: "/", dir: true}
+// Add adds resource to the manager
+func (m *Manager) Add(binary Binary) error {
+	m.rw.Lock()
+	defer m.rw.Unlock()
 
-	for _, item := range resouce.items {
-		path := split(item.key)
+	if m.root == nil {
+		m.root = &Node{name: "/", dir: true}
+	}
+
+	gzipper, err := gzip.NewReader(bytes.NewBuffer(binary))
+	if err != nil {
+		return err
+	}
+
+	root := m.root
+	reader := tar.NewReader(gzipper)
+
+	for {
+		header, err := reader.Next()
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		path := split(header.Name)
 		node := add(path, root)
 
-		if node != root && node.dir && len(node.children) == 0 {
-			node.dir = false
-			node.content = item.data
+		data, err := ioutil.ReadAll(reader)
+		if err != nil {
+			return err
 		}
+
+		if node == root {
+			return fmt.Errorf("Node cannot be root of the resource tree")
+		}
+
+		if node.dir && len(node.children) > 0 {
+			return fmt.Errorf("Node cannot be a directory")
+		}
+
+		node.dir = false
+		node.content = data
 	}
 
-	return &ResourceManager{root: root}
+	return nil
 }
 
-// Group returns a sub-manager for given path, if the path does not exist
+// Root returns a sub-manager for given path, if the path does not exist
 // it will return a new resource manager with empty content
-func (fs *ResourceManager) Group(name string) *ResourceManager {
-	if node := find(split(name), fs.root); node != nil {
+func (m *Manager) Root(name string) *Manager {
+	if node := find(split(name), m.root); node != nil {
 		if node.dir {
-			return &ResourceManager{root: node}
+			return &Manager{root: node}
 		}
 	}
 
-	return &ResourceManager{root: &Node{
+	return &Manager{root: &Node{
 		name: "/",
 		dir:  true,
 	}}
 }
 
 // Open opens an embeded resource for read
-func (fs *ResourceManager) Open(name string) (io.Reader, error) {
-	return fs.OpenFile(name, 0, 0)
+func (m *Manager) Open(name string) (io.Reader, error) {
+	return m.OpenFile(name, 0, 0)
 }
 
 // OpenFile is the generalized open call; most users will use Open
-func (fs *ResourceManager) OpenFile(name string, flag int, perm os.FileMode) (io.ReadWriteCloser, error) {
-	if node := find(split(name), fs.root); node != nil {
+func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (io.ReadWriteCloser, error) {
+	if node := find(split(name), m.root); node != nil {
 		if node.dir {
 			return nil, fmt.Errorf("Cannot open directory '%s'", name)
 		}
@@ -75,8 +105,8 @@ func (fs *ResourceManager) OpenFile(name string, flag int, perm os.FileMode) (io
 
 // Walk walks the file tree rooted at root, calling walkFn for each file or
 // directory in the tree, including root.
-func (fs *ResourceManager) Walk(dir string, fn filepath.WalkFunc) error {
-	if node := find(split(dir), fs.root); node != nil {
+func (m *Manager) Walk(dir string, fn filepath.WalkFunc) error {
+	if node := find(split(dir), m.root); node != nil {
 		return walk(dir, node, fn)
 	}
 
@@ -89,10 +119,6 @@ func add(path []string, node *Node) *Node {
 	}
 
 	name := path[0]
-
-	sort.Slice(node.children, func(i, j int) bool {
-		return node.children[i].name < node.children[j].name
-	})
 
 	for _, child := range node.children {
 		if child.name == name {

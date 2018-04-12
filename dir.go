@@ -1,10 +1,12 @@
-package embedo
+package parcel
 
 import (
 	"io"
 	"os"
 	"path/filepath"
 )
+
+var _ FileSystem = Dir("")
 
 // Dir implements FileSystem using the native file system restricted to a
 // specific directory tree.

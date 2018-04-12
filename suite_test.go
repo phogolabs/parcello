@@ -1,4 +1,4 @@
-package embedo_test
+package parcel_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestEmbedo(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Embedo Suite")
+	RunSpecs(t, "Parcel Suite")
 }

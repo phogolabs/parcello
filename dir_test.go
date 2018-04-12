@@ -1,4 +1,4 @@
-package embedo_test
+package parcel_test
 
 import (
 	"fmt"
@@ -8,17 +8,17 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/phogolabs/embedo"
+	"github.com/phogolabs/parcel"
 )
 
-var _ = Describe("FileSystem", func() {
-	var dir embedo.Dir
+var _ = Describe("Dir", func() {
+	var dir parcel.Dir
 
 	BeforeEach(func() {
 		path, err := ioutil.TempDir("", "gom_generator")
 		Expect(err).To(BeNil())
 
-		dir = embedo.Dir(path)
+		dir = parcel.Dir(path)
 		Expect(ioutil.WriteFile(filepath.Join(path, "sample.txt"), []byte("test"), 0600)).To(Succeed())
 	})
 
@@ -31,6 +31,16 @@ var _ = Describe("FileSystem", func() {
 			Expect(err).To(BeNil())
 			Expect(string(content)).To(Equal("test"))
 			Expect(file.Close()).To(Succeed())
+		})
+
+		Context("when the underlying file system fails", func() {
+			It("returns an error", func() {
+				dir = parcel.Dir("/hello")
+				file, err := dir.OpenFile("report.txt", os.O_RDONLY, 0)
+				Expect(file).To(BeNil())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("mkdir /hello: permission denied"))
+			})
 		})
 
 		Context("when the file does not exists", func() {

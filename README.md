@@ -1,4 +1,4 @@
-# Embedo
+# Parcel
 
 [![Documentation][godoc-img]][godoc-url]
 ![License][license-img]
@@ -9,15 +9,15 @@ An embeddable resource manager for Golang
 
 ## Overview
 
-Embedo is a simple resource manager for Golang that allows embedding artefacts
+Parcel is a simple resource manager for Golang that allows embedding artefacts
 like SQL and bash scripts. That allows easy release management by deploying
 just a single binary rather than many files.
 
 ## Installation
 
 ```console
-$ go get -u github.com/phogolabs/embedo
-$ go install github.com/phogolabs/embedo/cmd/embedo
+$ go get -u github.com/phogolabs/parcel
+$ go install github.com/phogolabs/parcel/cmd/parcel
 ```
 
 ## Usage
@@ -30,7 +30,7 @@ following comment:
 // Package database contains the database artefacts of GOM as embedded resource
 package database
 
-//go:generate embedo -r -pkg $GOPACKAGE -d .
+//go:generate parcel -r
 ```
 
 When you run:
@@ -46,18 +46,18 @@ subdirectories.
 You can read the content in the following way:
 
 ```golang
-file, err := database.ResourceManager.Open("your_sub_directory_name/your_file_name")
+file, err := parcel.ResourceManager.Open("your_sub_directory_name/your_file_name")
 ```
 ## Command Line Interface
 
 ```console
-$ embedo -h
+$ parcel -h
 
 NAME:
-   embedo - Golang Resource Embedder
+   parcel - Golang Resource Embedding
 
 USAGE:
-   embedo [global options]
+   parcel [global options]
 
 VERSION:
    0.1
@@ -66,15 +66,15 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --quite, -q                   Disable logging
-   --recursive, -r               Embed the resources recursively
-   --dir value, -d value         Path to directory
-   --package value, --pkg value  Package name
-   --ignore value, -i value      Ignore file name
-   --include-docs                Include API documentation in generated source code
-   --help, -h                    show help
-   --version, -v                 print the version
- ```
+   --quite, -q                     Disable logging
+   --recursive, -r                 Embed the resources recursively
+   --resource-dir value, -d value  Path to directory
+   --package value, --pkg value    Package name
+   --ignore value, -i value        Ignore file name
+   --include-docs                  Include API documentation in generated source code
+   --help, -h                      show help
+   --version, -v                   print the version
+```
 
 ## Example
 
@@ -83,14 +83,14 @@ You can check working example in our [GOM package](https://github.com/phogolabs/
 ## Contributing
 
 We are welcome to any contributions. Just fork the
-[project](https://github.com/phogolabs/embedo).
+[project](https://github.com/phogolabs/parcel).
 
-[coveralls-url]: https://coveralls.io/github/phogolabs/embedo
-[coveralls-img]: https://coveralls.io/repos/github/phogolabs/embedo/badge.svg?branch=master
-[travis-img]: https://travis-ci.org/phogolabs/embedo.svg?branch=master
-[travis-url]: https://travis-ci.org/phogolabs/embedo
-[embedo-url]: https://github.com/phogolabs/embedo
-[godoc-url]: https://godoc.org/github.com/phogolabs/embedo
-[godoc-img]: https://godoc.org/github.com/phogolabs/embedo?status.svg
+[coveralls-url]: https://coveralls.io/github/phogolabs/parcel
+[coveralls-img]: https://coveralls.io/repos/github/phogolabs/parcel/badge.svg?branch=master
+[travis-img]: https://travis-ci.org/phogolabs/parcel.svg?branch=master
+[travis-url]: https://travis-ci.org/phogolabs/parcel
+[parcel-url]: https://github.com/phogolabs/parcel
+[godoc-url]: https://godoc.org/github.com/phogolabs/parcel
+[godoc-img]: https://godoc.org/github.com/phogolabs/parcel?status.svg
 [license-img]: https://img.shields.io/badge/license-MIT-blue.svg
 [software-license-url]: LICENSE

@@ -2,12 +2,11 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/phogolabs/embedo"
+	"github.com/phogolabs/parcel"
 	"github.com/urfave/cli"
 )
 
@@ -17,10 +16,10 @@ const (
 
 func main() {
 	app := &cli.App{
-		Name:                 "embedo",
+		Name:                 "parcel",
 		HelpName:             "embedo",
-		Usage:                "Golang Resource Embedder",
-		UsageText:            "embedo [global options]",
+		Usage:                "Golang Resource Embedding",
+		UsageText:            "parcel [global options]",
 		Version:              "0.1",
 		BashComplete:         cli.DefaultAppComplete,
 		EnableBashCompletion: true,
@@ -37,7 +36,7 @@ func main() {
 				Usage: "Embed the resources recursively",
 			},
 			cli.StringFlag{
-				Name:  "dir, d",
+				Name:  "resource-dir, d",
 				Usage: "Path to directory",
 			},
 			cli.StringFlag{
@@ -59,16 +58,14 @@ func main() {
 }
 
 func run(ctx *cli.Context) error {
-	dir := ctx.String("dir")
-	if dir == "" {
-		err := fmt.Errorf("Directory is not provided")
+	dir, err := directory(ctx)
+	if err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
-	pkg := ctx.String("pkg")
+	pkg := ctx.String("package")
 	if pkg == "" {
-		err := fmt.Errorf("Package name is not provided")
-		return cli.NewExitError(err.Error(), ErrCodeArg)
+		pkg = filepath.Base(dir)
 	}
 
 	logger := ioutil.Discard
@@ -76,24 +73,44 @@ func run(ctx *cli.Context) error {
 		logger = os.Stdout
 	}
 
-	dir, err := filepath.Abs(dir)
-	if err != nil {
-		return cli.NewExitError(err.Error(), ErrCodeArg)
-	}
-
-	generator := &embedo.Generator{
-		Logger:     logger,
-		FileSystem: embedo.Dir(dir),
-		Config: &embedo.GeneratorConfig{
-			IgnorePatterns: ctx.StringSlice("ignore"),
-			Recurive:       ctx.Bool("recursive"),
-			InlcudeDocs:    ctx.BoolT("include-docs"),
+	generator := &parcel.Emitter{
+		FileSystem: parcel.Dir(dir),
+		Composer: &parcel.Generator{
+			Config: &parcel.GeneratorConfig{
+				InlcudeDocs: ctx.BoolT("include-docs"),
+			},
+		},
+		Compressor: &parcel.TarGZipCompressor{
+			Config: &parcel.CompressorConfig{
+				Logger:         logger,
+				Name:           pkg,
+				IgnorePatterns: ctx.StringSlice("ignore"),
+				Recurive:       ctx.Bool("recursive"),
+			},
 		},
 	}
 
-	if err := generator.Generate(pkg); err != nil {
+	if err := generator.Emit(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func directory(ctx *cli.Context) (string, error) {
+	var err error
+	dir := ctx.String("resource-dir")
+
+	if dir == "" {
+		if dir, err = os.Getwd(); err != nil {
+			return "", err
+		}
+	}
+
+	dir, err = filepath.Abs(dir)
+	if err != nil {
+		return "", err
+	}
+
+	return dir, nil
 }

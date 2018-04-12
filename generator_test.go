@@ -1,94 +1,59 @@
-package embedo_test
+package parcel_test
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
+	"bytes"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/phogolabs/embedo"
+	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcel/fake"
 )
 
 var _ = Describe("Generator", func() {
 	var (
-		generator *embedo.Generator
-		dir       string
+		generator *parcel.Generator
+		bundle    *parcel.Bundle
 	)
 
 	BeforeEach(func() {
-		var err error
-
-		dir, err = ioutil.TempDir("", "gom")
-		Expect(err).To(BeNil())
-
-		generator = &embedo.Generator{
-			FileSystem: embedo.Dir(dir),
-			Config: &embedo.GeneratorConfig{
-				Recurive:    true,
-				InlcudeDocs: false,
-			},
+		bundle = &parcel.Bundle{
+			Name: "bundle",
+			Body: parcel.NewBufferCloser([]byte("hello")),
 		}
 
-		Expect(os.MkdirAll(filepath.Join(dir, "sub"), 0755)).To(Succeed())
-		Expect(ioutil.WriteFile(filepath.Join(dir, "sub", "more.sql"), []byte("more"), 0600)).To(Succeed())
-		Expect(ioutil.WriteFile(filepath.Join(dir, "script.sql"), []byte("hello"), 0600)).To(Succeed())
+		generator = &parcel.Generator{
+			Config: &parcel.GeneratorConfig{},
+		}
 	})
 
-	It("generates the embedded resources successfully", func() {
-		Expect(generator.Generate("resource")).To(Succeed())
-
-		path := filepath.Join(dir, "resource.go")
-		Expect(path).To(BeARegularFile())
-
-		data, err := ioutil.ReadFile(path)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(string(data)).To(ContainSubstring("more.sql"))
-		Expect(string(data)).To(ContainSubstring("script.sql"))
-		Expect(string(data)).NotTo(ContainSubstring("// Auto-generated"))
+	It("writes the bundle to the destination successfully", func() {
+		buffer := &bytes.Buffer{}
+		Expect(generator.WriteTo(buffer, bundle)).To(Succeed())
+		Expect(buffer.String()).To(ContainSubstring("func init()"))
+		Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
+		Expect(buffer.String()).NotTo(ContainSubstring("// Auto-generated"))
 	})
 
-	Context("when the recursion is disabled", func() {
-		BeforeEach(func() {
-			generator.Config.Recurive = false
-		})
-
-		It("generates the embedded resources on root level successfully", func() {
-			Expect(generator.Generate("resource")).To(Succeed())
-
-			path := filepath.Join(dir, "resource.go")
-			Expect(path).To(BeARegularFile())
-
-			data, err := ioutil.ReadFile(path)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(data)).NotTo(ContainSubstring("more.sql"))
-			Expect(string(data)).To(ContainSubstring("script.sql"))
-			Expect(string(data)).NotTo(ContainSubstring("// Auto-generated"))
-		})
-	})
-
-	Context("when the documentation should be included", func() {
+	Context("when include API documentation is enabled", func() {
 		BeforeEach(func() {
 			generator.Config.InlcudeDocs = true
 		})
 
-		It("generates the embedded resources successfully", func() {
-			Expect(generator.Generate("resource")).To(Succeed())
-
-			path := filepath.Join(dir, "resource.go")
-			Expect(path).To(BeARegularFile())
-
-			data, err := ioutil.ReadFile(path)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(data)).To(ContainSubstring("script.sql"))
-			Expect(string(data)).To(ContainSubstring("// Auto-generated"))
+		It("includes the documentation", func() {
+			buffer := &bytes.Buffer{}
+			Expect(generator.WriteTo(buffer, bundle)).To(Succeed())
+			Expect(buffer.String()).To(ContainSubstring("func init()"))
+			Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
+			Expect(buffer.String()).To(ContainSubstring("// Auto-generated"))
 		})
 	})
 
-	Context("when the file system fails", func() {
-		It("returns an error", func() {
-			generator.FileSystem = embedo.Dir("/database")
-			Expect(generator.Generate("resource")).To(MatchError("Directory does not exist"))
+	Context("when writing the bundle fails", func() {
+		It("returns the error", func() {
+			buffer := &fake.ReadWriteCloser{}
+			buffer.WriteReturns(0, fmt.Errorf("Oh no!"))
+			Expect(generator.WriteTo(buffer, bundle)).To(MatchError("Oh no!"))
 		})
 	})
 })
