@@ -24,7 +24,7 @@ type Generator struct {
 // Generate generates an embedable resource for given directory
 func (g *Generator) WriteTo(w io.Writer, bundle *Bundle) error {
 	if g.Config.InlcudeDocs {
-		fmt.Fprintln(w, "// File contains an embedded resources")
+		fmt.Fprintln(w, "// Parcel Embedded Resources")
 		fmt.Fprintln(w, "// Auto-generated at", time.Now().Format(time.UnixDate))
 	}
 
