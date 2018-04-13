@@ -85,7 +85,7 @@ GLOBAL OPTIONS:
 
 ## Example
 
-You can check working example in our [GOM package](https://github.com/phogolabs/gom/tree/master/example).
+You can check working example in our [OAK package](https://github.com/phogolabs/oak/tree/master/example).
 
 ## Contributing
 
