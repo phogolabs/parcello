@@ -18,7 +18,7 @@ func main() {
 	app := &cli.App{
 		Name:                 "parcel",
 		HelpName:             "embedo",
-		Usage:                "Golang Resource Embedding",
+		Usage:                "Golang Resource Manager",
 		UsageText:            "parcel [global options]",
 		Version:              "0.1",
 		BashComplete:         cli.DefaultAppComplete,

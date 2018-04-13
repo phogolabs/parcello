@@ -61,7 +61,7 @@ time may increase significantly. We are working on better approach by using
 $ parcel -h
 
 NAME:
-   parcel - Golang Resource Embedding
+   parcel - Golang Resource Manager
 
 USAGE:
    parcel [global options]
