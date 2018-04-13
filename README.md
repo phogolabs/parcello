@@ -5,13 +5,15 @@
 [![Build Status][travis-img]][travis-url]
 [![Coverage][coveralls-img]][coveralls-url]
 
-An embeddable resource manager for Golang
+*A Golang Resource Manager*
+
+[![Parcel][parcel-img]][parcel-url]
 
 ## Overview
 
-Parcel is a simple resource manager for Golang that allows embedding artefacts
-like SQL and bash scripts. That allows easy release management by deploying
-just a single binary rather than many files.
+Parcel is a simple resource manager for Golang that allows embedding assets
+like SQL, bash scripts and images. That allows easy release management by
+deploying just a single binary rather than many files.
 
 ## Installation
 
@@ -85,6 +87,12 @@ You can check working example in our [GOM package](https://github.com/phogolabs/
 We are welcome to any contributions. Just fork the
 [project](https://github.com/phogolabs/parcel).
 
+*logo made by [Good Wave][logo-author-url] [CC 3.0][logo-license]*
+
+[logo-author-url]: https://www.flaticon.com/authors/good-ware
+[logo-license]: http://creativecommons.org/licenses/by/3.0/
+[parcel-url]: https://github.com/phogolabs/parcel
+[parcel-img]: doc/img/logo.png
 [coveralls-url]: https://coveralls.io/github/phogolabs/parcel
 [coveralls-img]: https://coveralls.io/repos/github/phogolabs/parcel/badge.svg?branch=master
 [travis-img]: https://travis-ci.org/phogolabs/parcel.svg?branch=master
