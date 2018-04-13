@@ -19,7 +19,7 @@ var _ = Describe("Generator", func() {
 	BeforeEach(func() {
 		bundle = &parcel.Bundle{
 			Name: "bundle",
-			Body: parcel.NewBufferCloser([]byte("hello")),
+			Body: parcel.NewBuffer([]byte("hello")),
 		}
 
 		generator = &parcel.Generator{

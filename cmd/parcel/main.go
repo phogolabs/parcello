@@ -92,7 +92,7 @@ func run(ctx *cli.Context) error {
 	}
 
 	if err := generator.Emit(); err != nil {
-		return err
+		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
 	return nil

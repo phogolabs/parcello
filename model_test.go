@@ -43,16 +43,16 @@ var _ = Describe("Model", func() {
 		})
 	})
 
-	Describe("BufferCloser", func() {
+	Describe("Buffer", func() {
 		It("reads successfully", func() {
-			buffer := parcel.NewBufferCloser([]byte("hello"))
+			buffer := parcel.NewBuffer([]byte("hello"))
 			data, err := ioutil.ReadAll(buffer)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(data)).To(Equal("hello"))
 		})
 
 		It("writes successfully", func() {
-			buffer := parcel.NewBufferCloser([]byte("hello"))
+			buffer := parcel.NewBuffer([]byte("hello"))
 			fmt.Fprintf(buffer, ",jack")
 
 			data, err := ioutil.ReadAll(buffer)
@@ -61,12 +61,19 @@ var _ = Describe("Model", func() {
 		})
 
 		It("closes successfully", func() {
-			buffer := parcel.NewBufferCloser([]byte("hello"))
+			buffer := parcel.NewBuffer([]byte("hello"))
 			Expect(buffer.Close()).To(Succeed())
 		})
 
+		It("seeks successfully", func() {
+			buffer := parcel.NewBuffer([]byte("hello"))
+			n, err := buffer.Seek(0, 0)
+			Expect(err).To(BeNil())
+			Expect(n).To(BeZero())
+		})
+
 		It("returns as string", func() {
-			buffer := parcel.NewBufferCloser([]byte("hello"))
+			buffer := parcel.NewBuffer([]byte("hello"))
 			Expect(buffer.String()).To(Equal("hello"))
 		})
 	})

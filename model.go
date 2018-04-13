@@ -40,7 +40,15 @@ type Bundle struct {
 	// Length returns the count of files in the bundle
 	Length int
 	// Body of the resource
-	Body io.ReadCloser
+	Body File
+}
+
+// File is the bundle file
+type File interface {
+	io.Reader
+	io.Writer
+	io.Seeker
+	io.Closer
 }
 
 // Binary represents a resource blob content
@@ -84,34 +92,39 @@ func (n *Node) Sys() interface{} {
 	return nil
 }
 
-// BufferCloser represents a *bytes.Buffer that can be closed
-type BufferCloser struct {
+// Buffer represents a *bytes.Buffer that can be closed
+type Buffer struct {
 	buffer *bytes.Buffer
 }
 
-// NewBufferCloser creates a new BufferCloser
-func NewBufferCloser(data []byte) *BufferCloser {
-	return &BufferCloser{
+// NewBuffer creates a new Buffer
+func NewBuffer(data []byte) *Buffer {
+	return &Buffer{
 		buffer: bytes.NewBuffer(data),
 	}
 }
 
 // Read reads the next len(p) bytes from the buffer or until the buffer is drainged
-func (b *BufferCloser) Read(p []byte) (int, error) {
+func (b *Buffer) Read(p []byte) (int, error) {
 	return b.buffer.Read(p)
 }
 
 // Write appends the contents of p to the buffer, growing the buffer as needed.
-func (b *BufferCloser) Write(p []byte) (int, error) {
+func (b *Buffer) Write(p []byte) (int, error) {
 	return b.buffer.Write(p)
 }
 
 // Close closes the buffer (noop).
-func (buff *BufferCloser) Close() error {
+func (buff *Buffer) Close() error {
 	return nil
 }
 
 // String returns the contents of the unread portion of the buffer
-func (b *BufferCloser) String() string {
+func (b *Buffer) String() string {
 	return b.buffer.String()
+}
+
+// Seeker is the interface that wraps the basic Seek method. (noop)
+func (b *Buffer) Seek(offset int64, whence int) (int64, error) {
+	return 0, nil
 }

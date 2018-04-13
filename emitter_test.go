@@ -16,16 +16,16 @@ var _ = Describe("Emitter", func() {
 		composer   *fake.Composer
 		compressor *fake.Compressor
 		fileSystem *fake.FileSystem
-		resource   *parcel.BufferCloser
+		resource   *parcel.Buffer
 		bundle     *parcel.Bundle
 	)
 
 	BeforeEach(func() {
-		resource = parcel.NewBufferCloser([]byte("data"))
+		resource = parcel.NewBuffer([]byte("data"))
 
 		bundle = &parcel.Bundle{
 			Name:   "resource",
-			Body:   parcel.NewBufferCloser([]byte("resource")),
+			Body:   parcel.NewBuffer([]byte("resource")),
 			Length: 20,
 		}
 

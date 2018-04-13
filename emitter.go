@@ -36,7 +36,11 @@ func (e *Emitter) Emit() error {
 	}
 
 	fmt.Fprintf(e.Logger, "Emitting %d resource(s) at 'resource.go'\n", bundle.Length)
+	err = e.save(bundle)
+	return err
+}
 
+func (e *Emitter) save(bundle *Bundle) error {
 	resource, err := e.FileSystem.OpenFile("resource.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err

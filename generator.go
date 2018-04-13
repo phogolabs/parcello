@@ -2,8 +2,10 @@ package parcel
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 )
 
@@ -24,36 +26,60 @@ type Generator struct {
 // Generate generates an embedable resource for given directory
 func (g *Generator) WriteTo(w io.Writer, bundle *Bundle) error {
 	if g.Config.InlcudeDocs {
-		fmt.Fprintln(w, "// Parcel Embedded Resources")
+		fmt.Fprintln(w, "// Package", bundle.Name, "contains embedded resources")
 		fmt.Fprintln(w, "// Auto-generated at", time.Now().Format(time.UnixDate))
 	}
 
-	fmt.Fprintf(w, "package %s\n\n", bundle.Name)
-	fmt.Fprintf(w, "import \"github.com/phogolabs/parcel\"\n\n")
-	fmt.Fprintf(w, "func init() {\n")
-	fmt.Fprintf(w, "  parcel.AddResource([]byte{")
+	fmt.Fprintln(w, "package", bundle.Name)
+	fmt.Fprintln(w)
+	fmt.Fprintf(w, `import "github.com/phogolabs/parcel"`)
+	fmt.Fprintln(w)
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "func init() {")
+	fmt.Fprintln(w, "\tparcel.AddResource([]byte{")
 
-	buffer := bufio.NewReader(bundle.Body)
-	written := 0
-	pattern := ""
+	reader := bufio.NewReader(bundle.Body)
+	buffer := &bytes.Buffer{}
 
 	for {
-		bit, err := buffer.ReadByte()
+		bit, err := reader.ReadByte()
 		if err == io.EOF {
-			_, err = fmt.Fprintf(w, "})\n}\n")
-			return nil
+			break
 		}
 
-		if written > 0 {
-			pattern = ", %d"
-		} else {
-			pattern = "%d"
+		if buffer.Len() == 0 {
+			fmt.Fprint(w, "\t\t")
 		}
 
-		if _, err = fmt.Fprintf(w, pattern, bit); err != nil {
-			return err
-		}
+		fmt.Fprintf(buffer, "%d, ", int(bit))
 
-		written = written + 1
+		if buffer.Len() >= 60 {
+			line := strings.TrimSpace(buffer.String())
+			if _, err := fmt.Fprintln(w, line); err != nil {
+				return err
+			}
+
+			buffer.Reset()
+			continue
+		}
 	}
+
+	if ln := buffer.Len(); ln > 0 && ln < 70 {
+		fmt.Fprintln(buffer)
+	}
+
+	line := strings.TrimSpace(buffer.String())
+	if _, err := fmt.Fprintln(w, line); err != nil {
+		return err
+	}
+
+	if _, err := fmt.Fprintln(w, "\t})"); err != nil {
+		return err
+	}
+
+	if _, err := fmt.Fprintln(w, "}"); err != nil {
+		return err
+	}
+
+	return nil
 }
