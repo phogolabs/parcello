@@ -67,27 +67,21 @@ func (m *Manager) Add(binary Binary) error {
 		node.dir = false
 		node.content = data
 	}
-
-	return nil
 }
 
-// Root returns a sub-manager for given path, if the path does not exist
-// it will return a new resource manager with empty content
-func (m *Manager) Root(name string) *Manager {
+// Root returns a sub-manager for given path
+func (m *Manager) Root(name string) (*Manager, error) {
 	if node := find(split(name), m.root); node != nil {
 		if node.dir {
-			return &Manager{root: node}
+			return &Manager{root: node}, nil
 		}
 	}
 
-	return &Manager{root: &Node{
-		name: "/",
-		dir:  true,
-	}}
+	return nil, fmt.Errorf("Resource hierarchy not found")
 }
 
 // Open opens an embeded resource for read
-func (m *Manager) Open(name string) (io.Reader, error) {
+func (m *Manager) Open(name string) (io.ReadCloser, error) {
 	return m.OpenFile(name, 0, 0)
 }
 

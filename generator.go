@@ -69,17 +69,13 @@ func (g *Generator) WriteTo(w io.Writer, bundle *Bundle) error {
 	}
 
 	line := strings.TrimSpace(buffer.String())
-	if _, err := fmt.Fprintln(w, line); err != nil {
-		return err
-	}
 
-	if _, err := fmt.Fprintln(w, "\t})"); err != nil {
-		return err
-	}
+	buffer.Reset()
 
-	if _, err := fmt.Fprintln(w, "}"); err != nil {
-		return err
-	}
+	fmt.Fprintln(buffer, line)
+	fmt.Fprintln(buffer, "\t})")
+	fmt.Fprintln(buffer, "}")
 
-	return nil
+	_, err := io.Copy(w, buffer)
+	return err
 }

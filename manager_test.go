@@ -53,7 +53,8 @@ var _ = Describe("Manager", func() {
 
 	Describe("Root", func() {
 		It("returns a valid sub-manager", func() {
-			group := manager.Root("/resource")
+			group, err := manager.Root("/resource")
+			Expect(err).To(BeNil())
 
 			file, err := group.Open("/reports/2018.txt")
 			Expect(file).NotTo(BeNil())
@@ -65,12 +66,34 @@ var _ = Describe("Manager", func() {
 		})
 
 		Context("when group is a file not a directory", func() {
-			It("returns a valid sub-manager", func() {
-				group := manager.Root("/resource/reports/2018.txt")
+			It("returns an error", func() {
+				group, err := manager.Root("/resource/reports/2018.txt")
+				Expect(group).To(BeNil())
+				Expect(err).To(MatchError("Resource hierarchy not found"))
+			})
+		})
 
-				file, err := group.Open("/")
-				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("Cannot open directory '/'"))
+		Context("when the manager is global", func() {
+			BeforeEach(func() {
+				parcel.AddResource(resource)
+			})
+
+			It("returns a valid sub-manager", func() {
+				group := parcel.Root("/resource")
+
+				file, err := group.Open("/reports/2018.txt")
+				Expect(file).NotTo(BeNil())
+				Expect(err).NotTo(HaveOccurred())
+
+				data, err := ioutil.ReadAll(file)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(data)).To(Equal("Report 2018\n"))
+			})
+
+			Context("when group is a file not a directory", func() {
+				It("panics", func() {
+					Expect(func() { parcel.Root("/resource/reports/2018.txt") }).To(Panic())
+				})
 			})
 		})
 	})
@@ -81,7 +104,14 @@ var _ = Describe("Manager", func() {
 				file, err := manager.Open("migration.sql")
 				Expect(file).To(BeNil())
 				Expect(err).To(MatchError("File 'migration.sql' not found"))
+			})
+		})
 
+		Context("when the global resource is empty", func() {
+			It("returns an error", func() {
+				file, err := parcel.Open("migration.sql")
+				Expect(file).To(BeNil())
+				Expect(err).To(MatchError("File 'migration.sql' not found"))
 			})
 		})
 

@@ -48,8 +48,13 @@ subdirectories.
 You can read the content in the following way:
 
 ```golang
-file, err := parcel.ResourceManager.Open("your_sub_directory_name/your_file_name")
+file, err := parcel.Open("your_sub_directory_name/your_file_name")
 ```
+
+Note that downsides of this resource embedding approach is that your compile
+time may increase significantly. We are working on better approach by using
+`syso`. Stay tuned.
+
 ## Command Line Interface
 
 ```console
