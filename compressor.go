@@ -12,6 +12,9 @@ import (
 
 var _ Compressor = &TarGZipCompressor{}
 
+// SkipResource skips a particular file from processing
+var SkipResource = fmt.Errorf("Skip Resource Error")
+
 // CompressorConfig controls how the code generation happens
 type CompressorConfig struct {
 	// Logger prints each step of compression
@@ -43,7 +46,7 @@ func (c *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 	}
 
 	if _, err = archive.Seek(0, os.SEEK_SET); err != nil {
-		archive.Close()
+		_ = archive.Close()
 		return nil, err
 	}
 
@@ -62,21 +65,13 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 	processed := 0
 
 	err := fileSystem.Walk("/", func(path string, info os.FileInfo, err error) error {
-		if info == nil {
-			return nil
-		}
+		err = e.filter(path, info)
 
-		if info.IsDir() {
-			if !e.Config.Recurive && path != "." {
-				return filepath.SkipDir
-			}
+		switch err {
+		case SkipResource:
 			return nil
-		}
-
-		ignore := append(e.Config.IgnorePatterns, "*.go")
-		for _, pattern := range ignore {
-			matched, err := filepath.Match(pattern, info.Name())
-			if err != nil || matched {
+		default:
+			if err != nil {
 				return err
 			}
 		}
@@ -125,4 +120,46 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 	}
 
 	return processed, err
+}
+
+func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
+	if info == nil {
+		return SkipResource
+	}
+
+	ignore := append(e.Config.IgnorePatterns, "*.go")
+
+	for _, pattern := range ignore {
+		matched, err := filepath.Match(pattern, path)
+		if err != nil {
+			return err
+		}
+
+		if !matched {
+			matched, err = filepath.Match(pattern, info.Name())
+			if err != nil {
+				return err
+			}
+
+			if !matched {
+				continue
+			}
+		}
+
+		if info.IsDir() {
+			return filepath.SkipDir
+		}
+
+		return SkipResource
+	}
+
+	if !info.IsDir() {
+		return nil
+	}
+
+	if !e.Config.Recurive && path != "." {
+		return filepath.SkipDir
+	}
+
+	return SkipResource
 }

@@ -65,7 +65,7 @@ var _ = Describe("TarGZipCompressor", func() {
 
 	Context("whene ingore pattern is provided", func() {
 		It("ignores that files", func() {
-			compressor.Config.IgnorePatterns = []string{"*.txt"}
+			compressor.Config.IgnorePatterns = []string{"*/**/*.txt"}
 			fileSystem := parcel.Dir("./fixture")
 
 			bundle, err := compressor.Compress(fileSystem)
@@ -95,6 +95,48 @@ var _ = Describe("TarGZipCompressor", func() {
 			Expect(err).To(MatchError("unexpected EOF"))
 
 			Expect(bundle.Body.Close()).To(Succeed())
+		})
+
+		Context("when the pattern is directory", func() {
+			It("ignores the directory and its files", func() {
+				compressor.Config.IgnorePatterns = []string{"resource/templates/**/*"}
+				fileSystem := parcel.Dir("./fixture")
+
+				bundle, err := compressor.Compress(fileSystem)
+				Expect(err).To(BeNil())
+				Expect(bundle).NotTo(BeNil())
+				Expect(bundle.Name).To(Equal("bundle"))
+
+				gzipper, err := gzip.NewReader(bundle.Body)
+				Expect(err).To(BeNil())
+
+				reader := tar.NewReader(gzipper)
+
+				header, err := reader.Next()
+				Expect(err).To(BeNil())
+				Expect(header.Name).To(Equal("resource/reports/2018.txt"))
+
+				header, err = reader.Next()
+				Expect(err).To(BeNil())
+				Expect(header.Name).To(Equal("resource/scripts/schema.sql"))
+
+				header, err = reader.Next()
+				Expect(header).To(BeNil())
+				Expect(err).To(MatchError("unexpected EOF"))
+
+				Expect(bundle.Body.Close()).To(Succeed())
+			})
+		})
+	})
+
+	Context("when the pattern is invalid", func() {
+		It("returns an error", func() {
+			compressor.Config.IgnorePatterns = []string{"[*"}
+			fileSystem := parcel.Dir("./fixture")
+
+			bundle, err := compressor.Compress(fileSystem)
+			Expect(err).To(MatchError("syntax error in pattern"))
+			Expect(bundle).To(BeNil())
 		})
 	})
 
