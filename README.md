@@ -5,7 +5,7 @@
 [![Build Status][travis-img]][travis-url]
 [![Coverage][coveralls-img]][coveralls-url]
 
-*A Golang Resource Manager*
+*A Golang Resource Bundler*
 
 [![Parcel][parcel-img]][parcel-url]
 
@@ -61,7 +61,7 @@ time may increase significantly. We are working on better approach by using
 $ parcel -h
 
 NAME:
-   parcel - Golang Resource Manager
+   parcel - Golang Resource Bundler
 
 USAGE:
    parcel [global options]
