@@ -74,6 +74,7 @@ func run(ctx *cli.Context) error {
 	}
 
 	generator := &parcel.Emitter{
+		Logger:     logger,
 		FileSystem: parcel.Dir(dir),
 		Composer: &parcel.Generator{
 			Config: &parcel.GeneratorConfig{

@@ -1,11 +1,15 @@
 package parcel
 
 import (
+	"fmt"
+	"io"
 	"os"
 )
 
 // Emitter emits the resources to the provided package
 type Emitter struct {
+	// Logger prints each step of compression
+	Logger io.Writer
 	// Composer composes the resources
 	Composer Composer
 	// Compressor compresses the resources
@@ -30,6 +34,8 @@ func (e *Emitter) Emit() error {
 	if bundle.Length == 0 {
 		return nil
 	}
+
+	fmt.Fprintf(e.Logger, "Emitting %d resource(s) at 'resource.go'\n", bundle.Length)
 
 	resource, err := e.FileSystem.OpenFile("resource.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {

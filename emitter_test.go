@@ -38,6 +38,7 @@ var _ = Describe("Emitter", func() {
 		fileSystem.OpenFileReturns(resource, nil)
 
 		emitter = &parcel.Emitter{
+			Logger:     GinkgoWriter,
 			Compressor: compressor,
 			Composer:   composer,
 			FileSystem: fileSystem,
