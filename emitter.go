@@ -35,7 +35,7 @@ func (e *Emitter) Emit() error {
 		return nil
 	}
 
-	fmt.Fprintf(e.Logger, "Emitting %d resource(s) at 'resource.go'\n", bundle.Length)
+	fmt.Fprintf(e.Logger, "Bundling %d resource(s) at 'resource.go'\n", bundle.Length)
 	err = e.save(bundle)
 	return err
 }
