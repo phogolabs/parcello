@@ -53,9 +53,10 @@ var _ = Describe("Emitter", func() {
 		Expect(composer.ComposeArgsForCall(0)).To(Equal(bundle))
 	})
 
-	Context("when the bundle length is zero", func() {
+	Context("when the bundle is nil", func() {
 		It("does not compose it", func() {
-			bundle.Length = 0
+			compressor.CompressReturns(nil, nil)
+
 			Expect(emitter.Emit()).To(Succeed())
 			Expect(compressor.CompressCallCount()).To(Equal(1))
 			Expect(compressor.CompressArgsForCall(0)).To(Equal(fileSystem))

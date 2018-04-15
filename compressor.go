@@ -50,6 +50,10 @@ func (c *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 		return nil, err
 	}
 
+	if processed == 0 {
+		return nil, nil
+	}
+
 	bundle := &Bundle{
 		Name:   c.Config.Filename,
 		Length: processed,
@@ -80,12 +84,12 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 
 		header, err := tar.FileInfoHeader(info, path)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		header.Name = path
 		if err := bundler.WriteHeader(header); err != nil {
-			return nil
+			return err
 		}
 
 		resource, err := fileSystem.OpenFile(path, os.O_RDONLY, 0)

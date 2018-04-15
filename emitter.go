@@ -24,15 +24,15 @@ func (e *Emitter) Emit() error {
 		return err
 	}
 
+	if bundle == nil {
+		return nil
+	}
+
 	defer func() {
 		if ioErr := bundle.Body.Close(); err == nil {
 			err = ioErr
 		}
 	}()
-
-	if bundle.Length == 0 {
-		return nil
-	}
 
 	fmt.Fprintf(e.Logger, "Bundling %d resource(s) at 'resource.go'\n", bundle.Length)
 	err = e.Composer.Compose(bundle)

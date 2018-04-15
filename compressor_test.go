@@ -4,7 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"fmt"
-	"io/ioutil"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -148,12 +148,7 @@ var _ = Describe("TarGZipCompressor", func() {
 
 			bundle, err := compressor.Compress(fileSystem)
 			Expect(err).To(BeNil())
-			Expect(bundle).NotTo(BeNil())
-			Expect(bundle.Name).To(Equal("bundle"))
-
-			data, err := ioutil.ReadAll(bundle.Body)
-			Expect(bundle.Body.Close()).To(Succeed())
-			Expect(data).To(HaveLen(10))
+			Expect(bundle).To(BeNil())
 		})
 	})
 
@@ -165,6 +160,19 @@ var _ = Describe("TarGZipCompressor", func() {
 
 			binary, err := compressor.Compress(fileSystem)
 			Expect(err).To(MatchError("Oh no!"))
+			Expect(binary).To(BeNil())
+		})
+	})
+
+	Context("when the walker returns an nil file info", func() {
+		It("return the error", func() {
+			fileSystem := &fake.FileSystem{}
+			fileSystem.WalkStub = func(dir string, fn filepath.WalkFunc) error {
+				return fn("/", nil, nil)
+			}
+
+			binary, err := compressor.Compress(fileSystem)
+			Expect(err).To(BeNil())
 			Expect(binary).To(BeNil())
 		})
 	})
