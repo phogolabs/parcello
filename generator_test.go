@@ -2,6 +2,7 @@ package parcel_test
 
 import (
 	"fmt"
+	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,12 +31,22 @@ var _ = Describe("Generator", func() {
 
 		generator = &parcel.Generator{
 			FileSystem: fileSystem,
-			Config:     &parcel.GeneratorConfig{},
+			Config: &parcel.GeneratorConfig{
+				Package: "mypackage",
+			},
 		}
 	})
 
 	It("writes the bundle to the destination successfully", func() {
 		Expect(generator.Compose(bundle)).To(Succeed())
+		Expect(fileSystem.OpenFileCallCount()).To(Equal(1))
+
+		filename, flag, mode := fileSystem.OpenFileArgsForCall(0)
+		Expect(filename).To(Equal("bundle.go"))
+		Expect(flag).To(Equal(os.O_WRONLY | os.O_CREATE | os.O_TRUNC))
+		Expect(mode).To(Equal(os.FileMode(0600)))
+
+		Expect(buffer.String()).To(ContainSubstring("package mypackage"))
 		Expect(buffer.String()).To(ContainSubstring("func init()"))
 		Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
 		Expect(buffer.String()).NotTo(ContainSubstring("// Auto-generated"))
@@ -48,6 +59,7 @@ var _ = Describe("Generator", func() {
 
 		It("includes the documentation", func() {
 			Expect(generator.Compose(bundle)).To(Succeed())
+			Expect(buffer.String()).To(ContainSubstring("package mypackage"))
 			Expect(buffer.String()).To(ContainSubstring("func init()"))
 			Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
 			Expect(buffer.String()).To(ContainSubstring("// Auto-generated"))

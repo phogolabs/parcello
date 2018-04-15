@@ -14,6 +14,8 @@ var _ Composer = &Generator{}
 
 // GeneratorConfig controls how the code generation happens
 type GeneratorConfig struct {
+	// Package determines the name of the package
+	Package string
 	// InlcudeDocs determines whether to include documentation
 	InlcudeDocs bool
 }
@@ -28,7 +30,9 @@ type Generator struct {
 
 // Generate generates an embedable resource for given directory
 func (g *Generator) Compose(bundle *Bundle) error {
-	w, err := g.FileSystem.OpenFile("resource.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	filename := fmt.Sprintf("%s.go", bundle.Name)
+
+	w, err := g.FileSystem.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
@@ -40,11 +44,11 @@ func (g *Generator) Compose(bundle *Bundle) error {
 	}()
 
 	if g.Config.InlcudeDocs {
-		fmt.Fprintln(w, "// Package", bundle.Name, "contains embedded resources")
+		fmt.Fprintln(w, "// Package", g.Config.Package, "contains embedded resources")
 		fmt.Fprintln(w, "// Auto-generated at", time.Now().Format(time.UnixDate))
 	}
 
-	fmt.Fprintln(w, "package", bundle.Name)
+	fmt.Fprintln(w, "package", g.Config.Package)
 	fmt.Fprintln(w)
 	fmt.Fprintf(w, `import "github.com/phogolabs/parcel"`)
 	fmt.Fprintln(w)

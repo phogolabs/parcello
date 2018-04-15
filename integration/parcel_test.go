@@ -141,13 +141,13 @@ var _ = Describe("Parcel", func() {
 			Eventually(session).Should(gexec.Exit(0))
 
 			Expect(session.Out).To(gbytes.Say("Compressing 'main.sql'"))
-			Expect(filepath.Join(cmd.Dir, "database/resource.go")).To(BeARegularFile())
+			Expect(resource).To(BeARegularFile())
 		})
 	})
 
-	Context("when the package is rovided", func() {
+	Context("when the bundle-dir is provided", func() {
 		BeforeEach(func() {
-			args = []string{"-r", "-pkg", "model"}
+			args = []string{"-r", "-b", "./database"}
 		})
 
 		It("returns an error", func() {
@@ -155,11 +155,12 @@ var _ = Describe("Parcel", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(session).Should(gexec.Exit(0))
 
+			resource = filepath.Join(cmd.Dir, "database", "resource.go")
 			Expect(resource).To(BeARegularFile())
 
 			data, err := ioutil.ReadFile(resource)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(data)).To(ContainSubstring("package model"))
+			Expect(string(data)).To(ContainSubstring("package database"))
 		})
 	})
 })

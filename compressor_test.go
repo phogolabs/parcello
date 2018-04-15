@@ -21,7 +21,7 @@ var _ = Describe("TarGZipCompressor", func() {
 		compressor = &parcel.TarGZipCompressor{
 			Config: &parcel.CompressorConfig{
 				Logger:   GinkgoWriter,
-				Name:     "bundle",
+				Filename: "bundle",
 				Recurive: true,
 			},
 		}

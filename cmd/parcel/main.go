@@ -2,6 +2,7 @@
 package main
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -17,7 +18,7 @@ const (
 func main() {
 	app := &cli.App{
 		Name:                 "parcel",
-		HelpName:             "embedo",
+		HelpName:             "parcel",
 		Usage:                "Golang Resource Bundler",
 		UsageText:            "parcel [global options]",
 		Version:              "0.1",
@@ -38,10 +39,12 @@ func main() {
 			cli.StringFlag{
 				Name:  "resource-dir, d",
 				Usage: "Path to directory",
+				Value: ".",
 			},
 			cli.StringFlag{
-				Name:  "package, pkg",
-				Usage: "Package name",
+				Name:  "bundle-dir, b",
+				Usage: "Path to bundle directory",
+				Value: ".",
 			},
 			cli.StringSliceFlag{
 				Name:  "ignore, i",
@@ -58,34 +61,32 @@ func main() {
 }
 
 func run(ctx *cli.Context) error {
-	dir, err := directory(ctx)
+	resourceDir, err := filepath.Abs(ctx.String("resource-dir"))
 	if err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
-	pkg := ctx.String("package")
-	if pkg == "" {
-		pkg = filepath.Base(dir)
+	bundleDir, err := filepath.Abs(ctx.String("bundle-dir"))
+	if err != nil {
+		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
-	logger := ioutil.Discard
-	if !ctx.Bool("quite") {
-		logger = os.Stdout
-	}
+	_, packageName := filepath.Split(bundleDir)
 
 	generator := &parcel.Emitter{
-		Logger:     logger,
-		FileSystem: parcel.Dir(dir),
+		Logger:     logger(ctx),
+		FileSystem: parcel.Dir(resourceDir),
 		Composer: &parcel.Generator{
-			FileSystem: parcel.Dir(dir),
+			FileSystem: parcel.Dir(bundleDir),
 			Config: &parcel.GeneratorConfig{
+				Package:     packageName,
 				InlcudeDocs: ctx.BoolT("include-docs"),
 			},
 		},
 		Compressor: &parcel.TarGZipCompressor{
 			Config: &parcel.CompressorConfig{
-				Logger:         logger,
-				Name:           pkg,
+				Logger:         logger(ctx),
+				Filename:       "resource",
 				IgnorePatterns: ctx.StringSlice("ignore"),
 				Recurive:       ctx.Bool("recursive"),
 			},
@@ -99,20 +100,10 @@ func run(ctx *cli.Context) error {
 	return nil
 }
 
-func directory(ctx *cli.Context) (string, error) {
-	var err error
-	dir := ctx.String("resource-dir")
-
-	if dir == "" {
-		if dir, err = os.Getwd(); err != nil {
-			return "", err
-		}
+func logger(ctx *cli.Context) io.Writer {
+	if ctx.Bool("quite") {
+		return ioutil.Discard
+	} else {
+		return os.Stdout
 	}
-
-	dir, err = filepath.Abs(dir)
-	if err != nil {
-		return "", err
-	}
-
-	return dir, nil
 }

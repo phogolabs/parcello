@@ -19,8 +19,8 @@ var SkipResource = fmt.Errorf("Skip Resource Error")
 type CompressorConfig struct {
 	// Logger prints each step of compression
 	Logger io.Writer
-	// Name of the compressed bundle
-	Name string
+	// Filename is the name of the compressed bundle
+	Filename string
 	// IgnorePatterns provides a list of all files that has to be ignored
 	IgnorePatterns []string
 	// Recurive enables embedding the resources recursively
@@ -51,7 +51,7 @@ func (c *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 	}
 
 	bundle := &Bundle{
-		Name:   c.Config.Name,
+		Name:   c.Config.Filename,
 		Length: processed,
 		Body:   archive,
 	}

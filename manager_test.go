@@ -23,7 +23,7 @@ var _ = Describe("Manager", func() {
 		compressor := parcel.TarGZipCompressor{
 			Config: &parcel.CompressorConfig{
 				Logger:   ioutil.Discard,
-				Name:     "bundle",
+				Filename: "bundle",
 				Recurive: true,
 			},
 		}
