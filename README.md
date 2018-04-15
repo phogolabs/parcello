@@ -17,9 +17,17 @@ deploying just a single binary rather than many files.
 
 ## Installation
 
+#### GitHub
+
 ```console
 $ go get -u github.com/phogolabs/parcel
 $ go install github.com/phogolabs/parcel/cmd/parcel
+```
+#### Homebrew (for Mac OS X)
+
+```console
+$ brew tap phogolabs/tap
+$ brew install parcel
 ```
 
 ## Usage
