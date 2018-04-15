@@ -2,7 +2,6 @@
 package fake
 
 import (
-	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -20,7 +19,7 @@ type FileSystem struct {
 	walkReturns struct {
 		result1 error
 	}
-	OpenFileStub        func(name string, flag int, perm os.FileMode) (io.ReadWriteCloser, error)
+	OpenFileStub        func(name string, flag int, perm os.FileMode) (parcel.File, error)
 	openFileMutex       sync.RWMutex
 	openFileArgsForCall []struct {
 		name string
@@ -28,7 +27,7 @@ type FileSystem struct {
 		perm os.FileMode
 	}
 	openFileReturns struct {
-		result1 io.ReadWriteCloser
+		result1 parcel.File
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -68,7 +67,7 @@ func (fake *FileSystem) WalkReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FileSystem) OpenFile(name string, flag int, perm os.FileMode) (io.ReadWriteCloser, error) {
+func (fake *FileSystem) OpenFile(name string, flag int, perm os.FileMode) (parcel.File, error) {
 	fake.openFileMutex.Lock()
 	fake.openFileArgsForCall = append(fake.openFileArgsForCall, struct {
 		name string
@@ -95,10 +94,10 @@ func (fake *FileSystem) OpenFileArgsForCall(i int) (string, int, os.FileMode) {
 	return fake.openFileArgsForCall[i].name, fake.openFileArgsForCall[i].flag, fake.openFileArgsForCall[i].perm
 }
 
-func (fake *FileSystem) OpenFileReturns(result1 io.ReadWriteCloser, result2 error) {
+func (fake *FileSystem) OpenFileReturns(result1 parcel.File, result2 error) {
 	fake.OpenFileStub = nil
 	fake.openFileReturns = struct {
-		result1 io.ReadWriteCloser
+		result1 parcel.File
 		result2 error
 	}{result1, result2}
 }

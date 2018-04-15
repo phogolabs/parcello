@@ -75,7 +75,7 @@ var _ = Describe("Generator", func() {
 
 	Context("when writing the bundle fails", func() {
 		It("returns the error", func() {
-			buffer := &fake.ReadWriteCloser{}
+			buffer := &fake.File{}
 			buffer.WriteReturns(0, fmt.Errorf("Oh no!"))
 			fileSystem.OpenFileReturns(buffer, nil)
 

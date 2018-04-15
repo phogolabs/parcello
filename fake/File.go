@@ -2,11 +2,12 @@
 package fake
 
 import (
-	"io"
 	"sync"
+
+	"github.com/phogolabs/parcel"
 )
 
-type ReadWriteCloser struct {
+type File struct {
 	ReadStub        func(p []byte) (n int, err error)
 	readMutex       sync.RWMutex
 	readArgsForCall []struct {
@@ -25,6 +26,16 @@ type ReadWriteCloser struct {
 		result1 int
 		result2 error
 	}
+	SeekStub        func(offset int64, whence int) (int64, error)
+	seekMutex       sync.RWMutex
+	seekArgsForCall []struct {
+		offset int64
+		whence int
+	}
+	seekReturns struct {
+		result1 int64
+		result2 error
+	}
 	CloseStub        func() error
 	closeMutex       sync.RWMutex
 	closeArgsForCall []struct{}
@@ -35,7 +46,7 @@ type ReadWriteCloser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ReadWriteCloser) Read(p []byte) (n int, err error) {
+func (fake *File) Read(p []byte) (n int, err error) {
 	var pCopy []byte
 	if p != nil {
 		pCopy = make([]byte, len(p))
@@ -53,19 +64,19 @@ func (fake *ReadWriteCloser) Read(p []byte) (n int, err error) {
 	return fake.readReturns.result1, fake.readReturns.result2
 }
 
-func (fake *ReadWriteCloser) ReadCallCount() int {
+func (fake *File) ReadCallCount() int {
 	fake.readMutex.RLock()
 	defer fake.readMutex.RUnlock()
 	return len(fake.readArgsForCall)
 }
 
-func (fake *ReadWriteCloser) ReadArgsForCall(i int) []byte {
+func (fake *File) ReadArgsForCall(i int) []byte {
 	fake.readMutex.RLock()
 	defer fake.readMutex.RUnlock()
 	return fake.readArgsForCall[i].p
 }
 
-func (fake *ReadWriteCloser) ReadReturns(result1 int, result2 error) {
+func (fake *File) ReadReturns(result1 int, result2 error) {
 	fake.ReadStub = nil
 	fake.readReturns = struct {
 		result1 int
@@ -73,7 +84,7 @@ func (fake *ReadWriteCloser) ReadReturns(result1 int, result2 error) {
 	}{result1, result2}
 }
 
-func (fake *ReadWriteCloser) Write(p []byte) (n int, err error) {
+func (fake *File) Write(p []byte) (n int, err error) {
 	var pCopy []byte
 	if p != nil {
 		pCopy = make([]byte, len(p))
@@ -91,19 +102,19 @@ func (fake *ReadWriteCloser) Write(p []byte) (n int, err error) {
 	return fake.writeReturns.result1, fake.writeReturns.result2
 }
 
-func (fake *ReadWriteCloser) WriteCallCount() int {
+func (fake *File) WriteCallCount() int {
 	fake.writeMutex.RLock()
 	defer fake.writeMutex.RUnlock()
 	return len(fake.writeArgsForCall)
 }
 
-func (fake *ReadWriteCloser) WriteArgsForCall(i int) []byte {
+func (fake *File) WriteArgsForCall(i int) []byte {
 	fake.writeMutex.RLock()
 	defer fake.writeMutex.RUnlock()
 	return fake.writeArgsForCall[i].p
 }
 
-func (fake *ReadWriteCloser) WriteReturns(result1 int, result2 error) {
+func (fake *File) WriteReturns(result1 int, result2 error) {
 	fake.WriteStub = nil
 	fake.writeReturns = struct {
 		result1 int
@@ -111,7 +122,41 @@ func (fake *ReadWriteCloser) WriteReturns(result1 int, result2 error) {
 	}{result1, result2}
 }
 
-func (fake *ReadWriteCloser) Close() error {
+func (fake *File) Seek(offset int64, whence int) (int64, error) {
+	fake.seekMutex.Lock()
+	fake.seekArgsForCall = append(fake.seekArgsForCall, struct {
+		offset int64
+		whence int
+	}{offset, whence})
+	fake.recordInvocation("Seek", []interface{}{offset, whence})
+	fake.seekMutex.Unlock()
+	if fake.SeekStub != nil {
+		return fake.SeekStub(offset, whence)
+	}
+	return fake.seekReturns.result1, fake.seekReturns.result2
+}
+
+func (fake *File) SeekCallCount() int {
+	fake.seekMutex.RLock()
+	defer fake.seekMutex.RUnlock()
+	return len(fake.seekArgsForCall)
+}
+
+func (fake *File) SeekArgsForCall(i int) (int64, int) {
+	fake.seekMutex.RLock()
+	defer fake.seekMutex.RUnlock()
+	return fake.seekArgsForCall[i].offset, fake.seekArgsForCall[i].whence
+}
+
+func (fake *File) SeekReturns(result1 int64, result2 error) {
+	fake.SeekStub = nil
+	fake.seekReturns = struct {
+		result1 int64
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *File) Close() error {
 	fake.closeMutex.Lock()
 	fake.closeArgsForCall = append(fake.closeArgsForCall, struct{}{})
 	fake.recordInvocation("Close", []interface{}{})
@@ -122,32 +167,34 @@ func (fake *ReadWriteCloser) Close() error {
 	return fake.closeReturns.result1
 }
 
-func (fake *ReadWriteCloser) CloseCallCount() int {
+func (fake *File) CloseCallCount() int {
 	fake.closeMutex.RLock()
 	defer fake.closeMutex.RUnlock()
 	return len(fake.closeArgsForCall)
 }
 
-func (fake *ReadWriteCloser) CloseReturns(result1 error) {
+func (fake *File) CloseReturns(result1 error) {
 	fake.CloseStub = nil
 	fake.closeReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *ReadWriteCloser) Invocations() map[string][][]interface{} {
+func (fake *File) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.readMutex.RLock()
 	defer fake.readMutex.RUnlock()
 	fake.writeMutex.RLock()
 	defer fake.writeMutex.RUnlock()
+	fake.seekMutex.RLock()
+	defer fake.seekMutex.RUnlock()
 	fake.closeMutex.RLock()
 	defer fake.closeMutex.RUnlock()
 	return fake.invocations
 }
 
-func (fake *ReadWriteCloser) recordInvocation(key string, args []interface{}) {
+func (fake *File) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -159,4 +206,4 @@ func (fake *ReadWriteCloser) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ io.ReadWriteCloser = new(ReadWriteCloser)
+var _ parcel.File = new(File)

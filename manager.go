@@ -81,12 +81,12 @@ func (m *Manager) Root(name string) (*Manager, error) {
 }
 
 // Open opens an embeded resource for read
-func (m *Manager) Open(name string) (io.ReadCloser, error) {
+func (m *Manager) Open(name string) (File, error) {
 	return m.OpenFile(name, 0, 0)
 }
 
 // OpenFile is the generalized open call; most users will use Open
-func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (io.ReadWriteCloser, error) {
+func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	if node := find(split(name), m.root); node != nil {
 		if node.dir {
 			return nil, fmt.Errorf("Cannot open directory '%s'", name)

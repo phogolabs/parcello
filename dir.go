@@ -1,7 +1,6 @@
 package parcel
 
 import (
-	"io"
 	"os"
 	"path/filepath"
 )
@@ -13,7 +12,7 @@ var _ FileSystem = Dir("")
 type Dir string
 
 // OpenFile is the generalized open call; most users will use Open
-func (d Dir) OpenFile(name string, flag int, perm os.FileMode) (io.ReadWriteCloser, error) {
+func (d Dir) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	dir := filepath.Join(string(d), filepath.Dir(name))
 
 	if err := os.MkdirAll(dir, 0700); err != nil {

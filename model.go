@@ -9,6 +9,7 @@ import (
 )
 
 //go:generate counterfeiter -fake-name FileSystem -o ./fake/FileSystem.go . FileSystem
+//go:generate counterfeiter -fake-name File -o ./fake/File.go . File
 //go:generate counterfeiter -fake-name Composer -o ./fake/Composer.go . Composer
 //go:generate counterfeiter -fake-name Compressor -o ./fake/Compressor.go . Compressor
 
@@ -18,7 +19,7 @@ type FileSystem interface {
 	// directory in the tree, including root.
 	Walk(dir string, fn filepath.WalkFunc) error
 	// OpenFile is the generalized open call; most users will use Open
-	OpenFile(name string, flag int, perm os.FileMode) (io.ReadWriteCloser, error)
+	OpenFile(name string, flag int, perm os.FileMode) (File, error)
 }
 
 // Composer composes the resources
