@@ -91,7 +91,7 @@ func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (io.ReadWrit
 		if node.dir {
 			return nil, fmt.Errorf("Cannot open directory '%s'", name)
 		}
-		return NewBuffer(node.content), nil
+		return NewBufferWith(node.content), nil
 	}
 
 	return nil, fmt.Errorf("File '%s' not found", name)

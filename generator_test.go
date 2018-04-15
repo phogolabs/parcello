@@ -1,7 +1,6 @@
 package parcel_test
 
 import (
-	"bytes"
 	"fmt"
 
 	. "github.com/onsi/ginkgo"
@@ -12,24 +11,31 @@ import (
 
 var _ = Describe("Generator", func() {
 	var (
-		generator *parcel.Generator
-		bundle    *parcel.Bundle
+		generator  *parcel.Generator
+		bundle     *parcel.Bundle
+		buffer     *parcel.Buffer
+		fileSystem *fake.FileSystem
 	)
 
 	BeforeEach(func() {
+		buffer = parcel.NewBuffer()
+
+		fileSystem = &fake.FileSystem{}
+		fileSystem.OpenFileReturns(buffer, nil)
+
 		bundle = &parcel.Bundle{
 			Name: "bundle",
-			Body: parcel.NewBuffer([]byte("hello")),
+			Body: parcel.NewBufferWith([]byte("hello")),
 		}
 
 		generator = &parcel.Generator{
-			Config: &parcel.GeneratorConfig{},
+			FileSystem: fileSystem,
+			Config:     &parcel.GeneratorConfig{},
 		}
 	})
 
 	It("writes the bundle to the destination successfully", func() {
-		buffer := &bytes.Buffer{}
-		Expect(generator.WriteTo(buffer, bundle)).To(Succeed())
+		Expect(generator.Compose(bundle)).To(Succeed())
 		Expect(buffer.String()).To(ContainSubstring("func init()"))
 		Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
 		Expect(buffer.String()).NotTo(ContainSubstring("// Auto-generated"))
@@ -41,11 +47,17 @@ var _ = Describe("Generator", func() {
 		})
 
 		It("includes the documentation", func() {
-			buffer := &bytes.Buffer{}
-			Expect(generator.WriteTo(buffer, bundle)).To(Succeed())
+			Expect(generator.Compose(bundle)).To(Succeed())
 			Expect(buffer.String()).To(ContainSubstring("func init()"))
 			Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
 			Expect(buffer.String()).To(ContainSubstring("// Auto-generated"))
+		})
+	})
+
+	Context("when the file system fails", func() {
+		It("returns the error", func() {
+			fileSystem.OpenFileReturns(nil, fmt.Errorf("Oh no!"))
+			Expect(generator.Compose(bundle)).To(MatchError("Oh no!"))
 		})
 	})
 
@@ -53,7 +65,9 @@ var _ = Describe("Generator", func() {
 		It("returns the error", func() {
 			buffer := &fake.ReadWriteCloser{}
 			buffer.WriteReturns(0, fmt.Errorf("Oh no!"))
-			Expect(generator.WriteTo(buffer, bundle)).To(MatchError("Oh no!"))
+			fileSystem.OpenFileReturns(buffer, nil)
+
+			Expect(generator.Compose(bundle)).To(MatchError("Oh no!"))
 		})
 	})
 })

@@ -23,8 +23,8 @@ type FileSystem interface {
 
 // Composer composes the resources
 type Composer interface {
-	// WriteTo composes from an archive
-	WriteTo(w io.Writer, bundle *Bundle) error
+	// Compose composes from an archive
+	Compose(bundle *Bundle) error
 }
 
 // Compressor compresses given resource
@@ -98,7 +98,14 @@ type Buffer struct {
 }
 
 // NewBuffer creates a new Buffer
-func NewBuffer(data []byte) *Buffer {
+func NewBuffer() *Buffer {
+	return &Buffer{
+		buffer: &bytes.Buffer{},
+	}
+}
+
+// NewBuffer creates a new Buffer with data
+func NewBufferWith(data []byte) *Buffer {
 	return &Buffer{
 		buffer: bytes.NewBuffer(data),
 	}

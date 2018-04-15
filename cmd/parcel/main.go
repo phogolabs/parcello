@@ -77,6 +77,7 @@ func run(ctx *cli.Context) error {
 		Logger:     logger,
 		FileSystem: parcel.Dir(dir),
 		Composer: &parcel.Generator{
+			FileSystem: parcel.Dir(dir),
 			Config: &parcel.GeneratorConfig{
 				InlcudeDocs: ctx.BoolT("include-docs"),
 			},

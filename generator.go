@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 )
@@ -19,12 +20,25 @@ type GeneratorConfig struct {
 
 // Generator generates an embedable resource
 type Generator struct {
+	// FileSystem represents the underlying file system
+	FileSystem FileSystem
 	// Config controls how the code generation happens
 	Config *GeneratorConfig
 }
 
 // Generate generates an embedable resource for given directory
-func (g *Generator) WriteTo(w io.Writer, bundle *Bundle) error {
+func (g *Generator) Compose(bundle *Bundle) error {
+	w, err := g.FileSystem.OpenFile("resource.go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if ioErr := w.Close(); err == nil {
+			err = ioErr
+		}
+	}()
+
 	if g.Config.InlcudeDocs {
 		fmt.Fprintln(w, "// Package", bundle.Name, "contains embedded resources")
 		fmt.Fprintln(w, "// Auto-generated at", time.Now().Format(time.UnixDate))
@@ -76,6 +90,6 @@ func (g *Generator) WriteTo(w io.Writer, bundle *Bundle) error {
 	fmt.Fprintln(buffer, "\t})")
 	fmt.Fprintln(buffer, "}")
 
-	_, err := io.Copy(w, buffer)
+	_, err = io.Copy(w, buffer)
 	return err
 }

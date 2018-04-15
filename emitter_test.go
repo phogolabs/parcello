@@ -2,7 +2,6 @@ package parcel_test
 
 import (
 	"fmt"
-	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,11 +20,11 @@ var _ = Describe("Emitter", func() {
 	)
 
 	BeforeEach(func() {
-		resource = parcel.NewBuffer([]byte("data"))
+		resource = parcel.NewBufferWith([]byte("data"))
 
 		bundle = &parcel.Bundle{
 			Name:   "resource",
-			Body:   parcel.NewBuffer([]byte("resource")),
+			Body:   parcel.NewBufferWith([]byte("resource")),
 			Length: 20,
 		}
 
@@ -49,17 +48,9 @@ var _ = Describe("Emitter", func() {
 		Expect(emitter.Emit()).To(Succeed())
 		Expect(compressor.CompressCallCount()).To(Equal(1))
 		Expect(compressor.CompressArgsForCall(0)).To(Equal(fileSystem))
-		Expect(fileSystem.OpenFileCallCount()).To(Equal(1))
 
-		filename, mode, perm := fileSystem.OpenFileArgsForCall(0)
-		Expect(filename).To(Equal("resource.go"))
-		Expect(int(mode)).To(Equal(int(os.O_WRONLY | os.O_CREATE | os.O_TRUNC)))
-		Expect(int(perm)).To(Equal(0600))
-
-		Expect(composer.WriteToCallCount()).To(Equal(1))
-		r, b := composer.WriteToArgsForCall(0)
-		Expect(r).To(Equal(resource))
-		Expect(b).To(Equal(bundle))
+		Expect(composer.ComposeCallCount()).To(Equal(1))
+		Expect(composer.ComposeArgsForCall(0)).To(Equal(bundle))
 	})
 
 	Context("when the bundle length is zero", func() {
@@ -68,8 +59,7 @@ var _ = Describe("Emitter", func() {
 			Expect(emitter.Emit()).To(Succeed())
 			Expect(compressor.CompressCallCount()).To(Equal(1))
 			Expect(compressor.CompressArgsForCall(0)).To(Equal(fileSystem))
-			Expect(fileSystem.OpenFileCallCount()).To(Equal(0))
-			Expect(composer.WriteToCallCount()).To(Equal(0))
+			Expect(composer.ComposeCallCount()).To(BeZero())
 		})
 	})
 
@@ -80,16 +70,9 @@ var _ = Describe("Emitter", func() {
 		})
 	})
 
-	Context("when the file system fails", func() {
-		It("returns the error", func() {
-			fileSystem.OpenFileReturns(nil, fmt.Errorf("Oh no!"))
-			Expect(emitter.Emit()).To(MatchError("Oh no!"))
-		})
-	})
-
 	Context("when the composer fails", func() {
 		It("returns the error", func() {
-			composer.WriteToReturns(fmt.Errorf("Oh no!"))
+			composer.ComposeReturns(fmt.Errorf("Oh no!"))
 			Expect(emitter.Emit()).To(MatchError("Oh no!"))
 		})
 	})

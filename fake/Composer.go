@@ -2,55 +2,52 @@
 package fake
 
 import (
-	"io"
 	"sync"
 
 	"github.com/phogolabs/parcel"
 )
 
 type Composer struct {
-	WriteToStub        func(w io.Writer, bundle *parcel.Bundle) error
-	writeToMutex       sync.RWMutex
-	writeToArgsForCall []struct {
-		w      io.Writer
+	ComposeStub        func(bundle *parcel.Bundle) error
+	composeMutex       sync.RWMutex
+	composeArgsForCall []struct {
 		bundle *parcel.Bundle
 	}
-	writeToReturns struct {
+	composeReturns struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Composer) WriteTo(w io.Writer, bundle *parcel.Bundle) error {
-	fake.writeToMutex.Lock()
-	fake.writeToArgsForCall = append(fake.writeToArgsForCall, struct {
-		w      io.Writer
+func (fake *Composer) Compose(bundle *parcel.Bundle) error {
+	fake.composeMutex.Lock()
+	fake.composeArgsForCall = append(fake.composeArgsForCall, struct {
 		bundle *parcel.Bundle
-	}{w, bundle})
-	fake.recordInvocation("WriteTo", []interface{}{w, bundle})
-	fake.writeToMutex.Unlock()
-	if fake.WriteToStub != nil {
-		return fake.WriteToStub(w, bundle)
+	}{bundle})
+	fake.recordInvocation("Compose", []interface{}{bundle})
+	fake.composeMutex.Unlock()
+	if fake.ComposeStub != nil {
+		return fake.ComposeStub(bundle)
 	}
-	return fake.writeToReturns.result1
+	return fake.composeReturns.result1
 }
 
-func (fake *Composer) WriteToCallCount() int {
-	fake.writeToMutex.RLock()
-	defer fake.writeToMutex.RUnlock()
-	return len(fake.writeToArgsForCall)
+func (fake *Composer) ComposeCallCount() int {
+	fake.composeMutex.RLock()
+	defer fake.composeMutex.RUnlock()
+	return len(fake.composeArgsForCall)
 }
 
-func (fake *Composer) WriteToArgsForCall(i int) (io.Writer, *parcel.Bundle) {
-	fake.writeToMutex.RLock()
-	defer fake.writeToMutex.RUnlock()
-	return fake.writeToArgsForCall[i].w, fake.writeToArgsForCall[i].bundle
+func (fake *Composer) ComposeArgsForCall(i int) *parcel.Bundle {
+	fake.composeMutex.RLock()
+	defer fake.composeMutex.RUnlock()
+	return fake.composeArgsForCall[i].bundle
 }
 
-func (fake *Composer) WriteToReturns(result1 error) {
-	fake.WriteToStub = nil
-	fake.writeToReturns = struct {
+func (fake *Composer) ComposeReturns(result1 error) {
+	fake.ComposeStub = nil
+	fake.composeReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -58,8 +55,8 @@ func (fake *Composer) WriteToReturns(result1 error) {
 func (fake *Composer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.writeToMutex.RLock()
-	defer fake.writeToMutex.RUnlock()
+	fake.composeMutex.RLock()
+	defer fake.composeMutex.RUnlock()
 	return fake.invocations
 }
 
