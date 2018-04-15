@@ -24,7 +24,14 @@ $ go install github.com/phogolabs/parcel/cmd/parcel
 
 ## Usage
 
-The best way to use the tool is via `go generate`. In order to embed all
+You can use the parcel command line interface to bundle the desired resources
+recursively:
+
+```console
+$ parcel -r -d <resource_dir_source> -b <bundle_dir_destination>
+```
+
+However, the best way to use the tool is via `go generate`. In order to embed all
 resource in particular directory, you should make it a package that has the
 following comment:
 
