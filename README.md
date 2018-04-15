@@ -48,6 +48,9 @@ subdirectories.
 You can read the content in the following way:
 
 ```golang
+// Import the package that includes 'resource.go'
+import _ "database"
+
 file, err := parcel.Open("your_sub_directory_name/your_file_name")
 ```
 
