@@ -75,8 +75,8 @@ COMMANDS:
 GLOBAL OPTIONS:
    --quite, -q                     Disable logging
    --recursive, -r                 Embed the resources recursively
-   --resource-dir value, -d value  Path to directory
-   --package value, --pkg value    Package name
+   --resource-dir value, -d value  Path to directory (default: ".")
+   --bundle-dir value, -b value    Path to bundle directory (default: ".")
    --ignore value, -i value        Ignore file name
    --include-docs                  Include API documentation in generated source code
    --help, -h                      show help
