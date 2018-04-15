@@ -5,7 +5,7 @@
 [![Build Status][travis-img]][travis-url]
 [![Coverage][coveralls-img]][coveralls-url]
 
-*A Golang Resource Bundler*
+*Golang Resource Bundler*
 
 [![Parcel][parcel-img]][parcel-url]
 
@@ -43,7 +43,8 @@ $ go generate ./...
 
 The tools will create a `resource.go` file that contains
 all embedded resource in that directory and its
-subdirectories.
+subdirectories as `tar.gz` archive which is registered in
+[parcel.ResourceManager](https://github.com/phogolabs/parcel/blob/master/common.go#L6).
 
 You can read the content in the following way:
 
@@ -53,6 +54,29 @@ import _ "database"
 
 file, err := parcel.Open("your_sub_directory_name/your_file_name")
 ```
+
+The `parcel` package provides an abstraction of
+[FileSystem](https://godoc.org/github.com/phogolabs/parcel#FileSystem)
+interface:
+
+```golang
+// FileSystem provides with primitives to work with the underlying file system
+type FileSystem interface {
+	// Walk walks the file tree rooted at root, calling walkFn for each file or
+	// directory in the tree, including root.
+	Walk(dir string, fn filepath.WalkFunc) error
+	// OpenFile is the generalized open call; most users will use Open
+	OpenFile(name string, flag int, perm os.FileMode) (File, error)
+}
+```
+
+That is implemented by the following:
+
+- [parcel.Manager](https://godoc.org/github.com/phogolabs/parcel#Manager) which provides an access to the bundled resources.
+- [parcel.Dir](https://godoc.org/github.com/phogolabs/parcel#Dir) which provides an access to the underlying file system.
+
+That allows easy replacement of the file system with the bundled resources and
+vice versa.
 
 Note that downsides of this resource embedding approach is that your compile
 time may increase significantly. We are working on better approach by using
