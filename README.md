@@ -3,7 +3,7 @@
 [![Documentation][godoc-img]][godoc-url]
 ![License][license-img]
 [![Build Status][travis-img]][travis-url]
-[![Coverage][coveralls-img]][coveralls-url]
+[![Coverage][codecov-img]][codecov-url]
 [![Go Report Card][report-img]][report-url]
 
 *Golang Resource Bundler*
@@ -143,8 +143,8 @@ We are welcome to any contributions. Just fork the
 [logo-license]: http://creativecommons.org/licenses/by/3.0/
 [parcel-url]: https://github.com/phogolabs/parcel
 [parcel-img]: doc/img/logo.png
-[coveralls-url]: https://coveralls.io/github/phogolabs/parcel
-[coveralls-img]: https://coveralls.io/repos/github/phogolabs/parcel/badge.svg?branch=master
+[codecov-url]: https://codecov.io/gh/phogolabs/parcel
+[codecov-img]: https://codecov.io/gh/phogolabs/parcel/branch/master/graph/badge.svg
 [travis-img]: https://travis-ci.org/phogolabs/parcel.svg?branch=master
 [travis-url]: https://travis-ci.org/phogolabs/parcel
 [parcel-url]: https://github.com/phogolabs/parcel
