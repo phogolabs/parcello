@@ -39,6 +39,12 @@ var _ = Describe("Manager", func() {
 	})
 
 	Describe("Add", func() {
+		Context("when the resource is added second time", func() {
+			It("returns an error", func() {
+				Expect(manager.Add(resource)).To(MatchError("Invalid path: 'resource/reports/2018.txt'"))
+			})
+		})
+
 		Context("when the resource is not tar.gz", func() {
 			It("returns an error", func() {
 				Expect(manager.Add([]byte("lol"))).To(MatchError("unexpected EOF"))
@@ -73,11 +79,8 @@ var _ = Describe("Manager", func() {
 		})
 
 		Context("when the manager is global", func() {
-			BeforeEach(func() {
-				parcel.AddResource(resource)
-			})
-
 			It("returns a valid sub-manager", func() {
+				parcel.AddResource(resource)
 				group := parcel.Root("/resource")
 
 				file, err := group.Open("/reports/2018.txt")

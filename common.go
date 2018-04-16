@@ -1,6 +1,8 @@
 package parcel
 
-import "io"
+import (
+	"io"
+)
 
 // ResourceManager keeps track of all resources
 var ResourceManager = &Manager{}

@@ -53,21 +53,12 @@ func (m *Manager) uncompress(reader *tar.Reader) error {
 		path := split(header.Name)
 		node := add(path, m.root)
 
-		data, err := ioutil.ReadAll(reader)
-		if err != nil {
-			return err
-		}
-
-		if node == m.root {
-			return fmt.Errorf("Node cannot be root of the resource tree")
-		}
-
-		if node.dir && len(node.children) > 0 {
-			return fmt.Errorf("Node cannot be a directory")
+		if node == m.root || node == nil {
+			return fmt.Errorf("Invalid path: '%s'", header.Name)
 		}
 
 		node.dir = false
-		node.content = data
+		node.content, _ = ioutil.ReadAll(reader)
 	}
 }
 
@@ -110,7 +101,11 @@ func (m *Manager) Walk(dir string, fn filepath.WalkFunc) error {
 }
 
 func add(path []string, node *Node) *Node {
-	if len(path) == 0 || !node.dir {
+	if !node.dir || len(node.content) > 0 {
+		return nil
+	}
+
+	if len(path) == 0 {
 		return node
 	}
 
