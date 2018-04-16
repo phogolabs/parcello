@@ -35,9 +35,11 @@ func (m *Manager) Add(binary Binary) error {
 		return err
 	}
 
-	root := m.root
 	reader := tar.NewReader(gzipper)
+	return m.uncompress(reader)
+}
 
+func (m *Manager) uncompress(reader *tar.Reader) error {
 	for {
 		header, err := reader.Next()
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
@@ -49,14 +51,14 @@ func (m *Manager) Add(binary Binary) error {
 		}
 
 		path := split(header.Name)
-		node := add(path, root)
+		node := add(path, m.root)
 
 		data, err := ioutil.ReadAll(reader)
 		if err != nil {
 			return err
 		}
 
-		if node == root {
+		if node == m.root {
 			return fmt.Errorf("Node cannot be root of the resource tree")
 		}
 

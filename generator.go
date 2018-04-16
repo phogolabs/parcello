@@ -60,8 +60,8 @@ func (g *Generator) Compose(bundle *Bundle) error {
 	buffer := &bytes.Buffer{}
 
 	for {
-		bit, err := reader.ReadByte()
-		if err == io.EOF {
+		bit, rErr := reader.ReadByte()
+		if rErr == io.EOF {
 			break
 		}
 
@@ -73,8 +73,8 @@ func (g *Generator) Compose(bundle *Bundle) error {
 
 		if buffer.Len() >= 60 {
 			line := strings.TrimSpace(buffer.String())
-			if _, err := fmt.Fprintln(w, line); err != nil {
-				return err
+			if _, ferr := fmt.Fprintln(w, line); ferr != nil {
+				return ferr
 			}
 
 			buffer.Reset()
@@ -82,7 +82,7 @@ func (g *Generator) Compose(bundle *Bundle) error {
 		}
 	}
 
-	if ln := buffer.Len(); ln > 0 && ln < 70 {
+	if ln := buffer.Len(); ln > 0 && ln < 60 {
 		fmt.Fprintln(buffer)
 	}
 

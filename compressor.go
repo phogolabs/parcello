@@ -45,7 +45,7 @@ func (e *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 		return nil, err
 	}
 
-	if _, err = archive.Seek(0, os.SEEK_SET); err != nil {
+	if _, err = archive.Seek(0, io.SeekStart); err != nil {
 		_ = archive.Close()
 		return nil, err
 	}
@@ -69,6 +69,10 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 	processed := 0
 
 	err := fileSystem.Walk("/", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		err = e.filter(path, info)
 
 		switch err {
@@ -80,44 +84,25 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 			}
 		}
 
-		fmt.Fprintln(e.Config.Logger, fmt.Sprintf("Compressing '%s'", path))
-
-		header, err := tar.FileInfoHeader(info, path)
-		if err != nil {
-			return err
-		}
-
-		header.Name = path
-		if err := bundler.WriteHeader(header); err != nil {
-			return err
-		}
-
-		resource, err := fileSystem.OpenFile(path, os.O_RDONLY, 0)
-		if err != nil {
-			return err
-		}
-
-		defer func() {
-			if ioErr := resource.Close(); err == nil {
-				err = ioErr
-			}
-		}()
-
-		if _, err = io.Copy(bundler, resource); err != nil {
-			return err
-		}
-
-		if err = bundler.Flush(); err != nil {
-			return err
-		}
-
-		if err = compressor.Flush(); err != nil {
+		if err = e.walk(bundler, fileSystem, path, info); err != nil {
 			return err
 		}
 
 		processed = processed + 1
-		return err
+		return nil
 	})
+
+	if err != nil {
+		return processed, err
+	}
+
+	if err = bundler.Flush(); err != nil {
+		return processed, err
+	}
+
+	if err = compressor.Flush(); err != nil {
+		return processed, err
+	}
 
 	if ioErr := bundler.Close(); err == nil {
 		err = ioErr
@@ -126,11 +111,55 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 	return processed, err
 }
 
+func (e *TarGZipCompressor) walk(bundler *tar.Writer, fileSystem FileSystem, path string, info os.FileInfo) error {
+	fmt.Fprintln(e.Config.Logger, fmt.Sprintf("Compressing '%s'", path))
+
+	header, err := tar.FileInfoHeader(info, path)
+	if err != nil {
+		return err
+	}
+
+	header.Name = path
+	if err = bundler.WriteHeader(header); err != nil {
+		return err
+	}
+
+	resource, err := fileSystem.OpenFile(path, os.O_RDONLY, 0)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if ioErr := resource.Close(); err == nil {
+			err = ioErr
+		}
+	}()
+
+	_, err = io.Copy(bundler, resource)
+	return err
+}
+
 func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
 	if info == nil {
 		return ErrSkipResource
 	}
 
+	if err := e.ignore(path, info); err != nil {
+		return err
+	}
+
+	if !info.IsDir() {
+		return nil
+	}
+
+	if !e.Config.Recurive && path != "." {
+		return filepath.SkipDir
+	}
+
+	return ErrSkipResource
+}
+
+func (e *TarGZipCompressor) ignore(path string, info os.FileInfo) error {
 	ignore := append(e.Config.IgnorePatterns, "*.go")
 
 	for _, pattern := range ignore {
@@ -157,13 +186,5 @@ func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
 		return ErrSkipResource
 	}
 
-	if !info.IsDir() {
-		return nil
-	}
-
-	if !e.Config.Recurive && path != "." {
-		return filepath.SkipDir
-	}
-
-	return ErrSkipResource
+	return nil
 }
