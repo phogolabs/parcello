@@ -175,6 +175,19 @@ var _ = Describe("TarGZipCompressor", func() {
 		})
 	})
 
+	Context("when the walker callback has an error", func() {
+		It("return the error", func() {
+			fileSystem := &fake.FileSystem{}
+			fileSystem.WalkStub = func(dir string, fn filepath.WalkFunc) error {
+				return fn("path", nil, fmt.Errorf("Oh no!"))
+			}
+
+			binary, err := compressor.Compress(fileSystem)
+			Expect(err).To(MatchError("Oh no!"))
+			Expect(binary).To(BeNil())
+		})
+	})
+
 	Context("when the traversing fails", func() {
 		It("return the error", func() {
 			fileSystem := &fake.FileSystem{}

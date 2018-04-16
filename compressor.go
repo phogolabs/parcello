@@ -88,13 +88,8 @@ func (e *TarGZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int,
 		return count, err
 	}
 
-	if err = bundler.Flush(); err != nil {
-		return count, err
-	}
-
-	if err = compressor.Flush(); err != nil {
-		return count, err
-	}
+	bundler.Flush()
+	compressor.Flush()
 
 	if ioErr := bundler.Close(); err == nil {
 		err = ioErr
