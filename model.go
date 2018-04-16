@@ -68,12 +68,12 @@ func (n *Node) Name() string {
 	return n.name
 }
 
-// Size is the length in bytes for regular files
+// Size returns the length in bytes for regular files
 func (n *Node) Size() int64 {
 	return int64(len(n.content))
 }
 
-// FileMode are the file mode bits
+// Mode returns the file mode bits
 func (n *Node) Mode() os.FileMode {
 	return 0
 }
@@ -88,7 +88,7 @@ func (n *Node) IsDir() bool {
 	return n.dir
 }
 
-// Underlying data source
+// Sys returns the underlying data source
 func (n *Node) Sys() interface{} {
 	return nil
 }
@@ -105,7 +105,7 @@ func NewBuffer() *Buffer {
 	}
 }
 
-// NewBuffer creates a new Buffer with data
+// NewBufferWith creates a new Buffer with data
 func NewBufferWith(data []byte) *Buffer {
 	return &Buffer{
 		buffer: bytes.NewBuffer(data),
@@ -123,7 +123,7 @@ func (b *Buffer) Write(p []byte) (int, error) {
 }
 
 // Close closes the buffer (noop).
-func (buff *Buffer) Close() error {
+func (b *Buffer) Close() error {
 	return nil
 }
 
@@ -132,7 +132,8 @@ func (b *Buffer) String() string {
 	return b.buffer.String()
 }
 
-// Seeker is the interface that wraps the basic Seek method. (noop)
+// Seek sets the offset for the next Read or Write to offset,
+// interpreted according to whence.
 func (b *Buffer) Seek(offset int64, whence int) (int64, error) {
 	return 0, nil
 }

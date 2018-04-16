@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	// ErrCodeArg is returned when an invalid argument is passed to CLI
 	ErrCodeArg = 101
 )
 
@@ -103,7 +104,7 @@ func run(ctx *cli.Context) error {
 func logger(ctx *cli.Context) io.Writer {
 	if ctx.Bool("quite") {
 		return ioutil.Discard
-	} else {
-		return os.Stdout
 	}
+
+	return os.Stdout
 }

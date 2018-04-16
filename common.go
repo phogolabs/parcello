@@ -3,7 +3,7 @@ package parcel
 import "io"
 
 // ResourceManager keeps track of all resources
-var ResourceManager *Manager = &Manager{}
+var ResourceManager = &Manager{}
 
 // AddResource adds resource to the default resource manager
 // Note that the method may panic if the resource not exists

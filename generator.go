@@ -28,7 +28,7 @@ type Generator struct {
 	Config *GeneratorConfig
 }
 
-// Generate generates an embedable resource for given directory
+// Compose generates an embedable resource for given directory
 func (g *Generator) Compose(bundle *Bundle) error {
 	filename := fmt.Sprintf("%s.go", bundle.Name)
 

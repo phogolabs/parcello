@@ -12,8 +12,8 @@ import (
 
 var _ Compressor = &TarGZipCompressor{}
 
-// SkipResource skips a particular file from processing
-var SkipResource = fmt.Errorf("Skip Resource Error")
+// ErrSkipResource skips a particular file from processing
+var ErrSkipResource = fmt.Errorf("Skip Resource Error")
 
 // CompressorConfig controls how the code generation happens
 type CompressorConfig struct {
@@ -34,13 +34,13 @@ type TarGZipCompressor struct {
 }
 
 // Compress compresses given source in tar.gz
-func (c *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
+func (e *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 	archive, err := ioutil.TempFile("", "parcel")
 	if err != nil {
 		return nil, err
 	}
 
-	processed, err := c.writeTo(fileSystem, archive)
+	processed, err := e.writeTo(fileSystem, archive)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 	}
 
 	bundle := &Bundle{
-		Name:   c.Config.Filename,
+		Name:   e.Config.Filename,
 		Length: processed,
 		Body:   archive,
 	}
@@ -72,7 +72,7 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 		err = e.filter(path, info)
 
 		switch err {
-		case SkipResource:
+		case ErrSkipResource:
 			return nil
 		default:
 			if err != nil {
@@ -128,7 +128,7 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 
 func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
 	if info == nil {
-		return SkipResource
+		return ErrSkipResource
 	}
 
 	ignore := append(e.Config.IgnorePatterns, "*.go")
@@ -154,7 +154,7 @@ func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
 			return filepath.SkipDir
 		}
 
-		return SkipResource
+		return ErrSkipResource
 	}
 
 	if !info.IsDir() {
@@ -165,5 +165,5 @@ func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
 		return filepath.SkipDir
 	}
 
-	return SkipResource
+	return ErrSkipResource
 }
