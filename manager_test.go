@@ -32,6 +32,7 @@ var _ = Describe("Manager", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		resource, err = ioutil.ReadAll(bundle.Body)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(bundle.Body.Close()).To(Succeed())
 	})
 
