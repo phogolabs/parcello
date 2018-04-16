@@ -22,7 +22,7 @@ func main() {
 		HelpName:             "parcel",
 		Usage:                "Golang Resource Bundler",
 		UsageText:            "parcel [global options]",
-		Version:              "0.1",
+		Version:              "0.2",
 		BashComplete:         cli.DefaultAppComplete,
 		EnableBashCompletion: true,
 		Writer:               os.Stdout,
