@@ -29,11 +29,7 @@ func (d Dir) Walk(dir string, fn filepath.WalkFunc) error {
 	dir = filepath.Join(string(d), dir)
 
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		path, relErr := filepath.Rel(string(d), path)
-		if relErr != nil {
-			return relErr
-		}
-
+		path, _ = filepath.Rel(string(d), path)
 		return fn(path, info, err)
 	})
 }

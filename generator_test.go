@@ -66,6 +66,16 @@ var _ = Describe("Generator", func() {
 		})
 	})
 
+	Context("when the package name is not provided", func() {
+		BeforeEach(func() {
+			generator.Config.Package = ""
+		})
+
+		It("returns the error", func() {
+			Expect(generator.Compose(bundle)).To(MatchError("3:1: expected 'IDENT', found 'import'"))
+		})
+	})
+
 	Context("when the file system fails", func() {
 		It("returns the error", func() {
 			fileSystem.OpenFileReturns(nil, fmt.Errorf("Oh no!"))
