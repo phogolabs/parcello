@@ -17,5 +17,8 @@ install:
   - glide install
 
 script:
-  - ginkgo -r -v -covermode=count -coverprofile=coverage.out
-  - goveralls -coverprofile=coverage.out -service=travis-ci
+  - ginkgo -r -v -covermode=atomic
+
+after_success:
+  - cmd/cover.sh
+  - bash <(curl -s https://codecov.io/bash)
