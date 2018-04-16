@@ -13,7 +13,7 @@ import (
 //go:generate counterfeiter -fake-name Composer -o ./fake/Composer.go . Composer
 //go:generate counterfeiter -fake-name Compressor -o ./fake/Compressor.go . Compressor
 
-// FileSystem provides with primitives to work with the underlying file system
+// FileSystem provides primitives to work with the underlying file system
 type FileSystem interface {
 	// Walk walks the file tree rooted at root, calling walkFn for each file or
 	// directory in the tree, including root.

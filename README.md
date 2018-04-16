@@ -76,7 +76,7 @@ The `parcel` package provides an abstraction of
 interface:
 
 ```golang
-// FileSystem provides with primitives to work with the underlying file system
+// FileSystem provides primitives to work with the underlying file system
 type FileSystem interface {
 	// Walk walks the file tree rooted at root, calling walkFn for each file or
 	// directory in the tree, including root.
@@ -94,7 +94,7 @@ That is implemented by the following:
 That allows easy replacement of the file system with the bundled resources and
 vice versa.
 
-Note that downsides of this resource embedding approach is that your compile
+Note that downsides of this resource embedding approach are that your compile
 time may increase significantly. We are working on better approach by using
 `syso`. Stay tuned.
 
