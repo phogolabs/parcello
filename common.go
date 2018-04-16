@@ -13,7 +13,7 @@ func AddResource(resource Binary) {
 	}
 }
 
-// Open opens an embeded resource for read
+// Open opens an embedded resource for read
 func Open(name string) (io.ReadCloser, error) {
 	return ResourceManager.Open(name)
 }

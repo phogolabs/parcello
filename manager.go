@@ -82,7 +82,7 @@ func (m *Manager) Root(name string) (*Manager, error) {
 	return nil, fmt.Errorf("Resource hierarchy not found")
 }
 
-// Open opens an embeded resource for read
+// Open opens an embedded resource for read
 func (m *Manager) Open(name string) (File, error) {
 	return m.OpenFile(name, 0, 0)
 }
