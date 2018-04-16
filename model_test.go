@@ -18,6 +18,16 @@ var _ = Describe("Model", func() {
 			node = &parcel.Node{}
 		})
 
+		It("creates a directory node", func() {
+			node := parcel.NewNodeDir("jack")
+			Expect(node.Name()).To(Equal("jack"))
+		})
+
+		It("creates a file node", func() {
+			node := parcel.NewNodeFile("jack", []byte{})
+			Expect(node.Name()).To(Equal("jack"))
+		})
+
 		It("returns the Name successfully", func() {
 			Expect(node.Name()).To(BeEmpty())
 		})

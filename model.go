@@ -63,6 +63,23 @@ type Node struct {
 	children []*Node
 }
 
+// NewNodeDir creates a new directory node
+func NewNodeDir(name string) *Node {
+	return &Node{
+		name: name,
+		dir:  true,
+	}
+}
+
+// NewNodeFile creates a new file node
+func NewNodeFile(name string, content Binary) *Node {
+	return &Node{
+		name:    name,
+		dir:     false,
+		content: content,
+	}
+}
+
 // Name returns the base name of the file
 func (n *Node) Name() string {
 	return n.name
