@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"go/format"
 	"io"
 	"os"
 	"strings"
@@ -50,7 +51,7 @@ func (g *Generator) Compose(bundle *Bundle) error {
 	fmt.Fprintln(template, "\t})")
 	fmt.Fprintln(template, "}")
 
-	return g.write(bundle.Name, template)
+	return g.write(bundle.Name, template.Bytes())
 }
 
 func (g *Generator) prepare(data []byte) []byte {
@@ -82,7 +83,13 @@ func (g *Generator) prepare(data []byte) []byte {
 	}
 }
 
-func (g *Generator) write(name string, body io.Reader) error {
+func (g *Generator) write(name string, data []byte) error {
+	var err error
+
+	if data, err = format.Source(data); err != nil {
+		return err
+	}
+
 	filename := fmt.Sprintf("%s.go", name)
 
 	file, err := g.FileSystem.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
@@ -96,6 +103,6 @@ func (g *Generator) write(name string, body io.Reader) error {
 		}
 	}()
 
-	_, err = io.Copy(file, body)
+	_, err = file.Write(data)
 	return err
 }
