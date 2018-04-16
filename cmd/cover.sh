@@ -1,5 +1,8 @@
 #!/bin/bash
 
-echo > coverage.txt
+echo "mode: atomic" > coverage.txt
 
-find ./*.coverprofile -maxdepth 10 -type f -exec cat {} >> coverage.txt \;
+for profile in $(find . -name '*.coverprofile' -maxdepth 10  -type f); do
+  grep -v "mode: " < "$profile" >> coverage.txt
+  rm "$profile"
+done
