@@ -2,6 +2,7 @@ package parcel_test
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"path/filepath"
@@ -35,7 +36,8 @@ var _ = Describe("TarGZipCompressor", func() {
 		Expect(bundle).NotTo(BeNil())
 		Expect(bundle.Name).To(Equal("bundle"))
 
-		gzipper, err := gzip.NewReader(bundle.Body)
+		body := bytes.NewBuffer(bundle.Body)
+		gzipper, err := gzip.NewReader(body)
 		Expect(err).To(BeNil())
 
 		reader := tar.NewReader(gzipper)
@@ -59,8 +61,6 @@ var _ = Describe("TarGZipCompressor", func() {
 		header, err = reader.Next()
 		Expect(header).To(BeNil())
 		Expect(err).To(MatchError("unexpected EOF"))
-
-		Expect(bundle.Body.Close()).To(Succeed())
 	})
 
 	Context("whene ingore pattern is provided", func() {
@@ -73,7 +73,8 @@ var _ = Describe("TarGZipCompressor", func() {
 			Expect(bundle).NotTo(BeNil())
 			Expect(bundle.Name).To(Equal("bundle"))
 
-			gzipper, err := gzip.NewReader(bundle.Body)
+			body := bytes.NewBuffer(bundle.Body)
+			gzipper, err := gzip.NewReader(body)
 			Expect(err).To(BeNil())
 
 			reader := tar.NewReader(gzipper)
@@ -93,8 +94,6 @@ var _ = Describe("TarGZipCompressor", func() {
 			header, err = reader.Next()
 			Expect(header).To(BeNil())
 			Expect(err).To(MatchError("unexpected EOF"))
-
-			Expect(bundle.Body.Close()).To(Succeed())
 		})
 
 		Context("when the pattern is directory", func() {
@@ -107,7 +106,8 @@ var _ = Describe("TarGZipCompressor", func() {
 				Expect(bundle).NotTo(BeNil())
 				Expect(bundle.Name).To(Equal("bundle"))
 
-				gzipper, err := gzip.NewReader(bundle.Body)
+				body := bytes.NewBuffer(bundle.Body)
+				gzipper, err := gzip.NewReader(body)
 				Expect(err).To(BeNil())
 
 				reader := tar.NewReader(gzipper)
@@ -123,8 +123,6 @@ var _ = Describe("TarGZipCompressor", func() {
 				header, err = reader.Next()
 				Expect(header).To(BeNil())
 				Expect(err).To(MatchError("unexpected EOF"))
-
-				Expect(bundle.Body.Close()).To(Succeed())
 			})
 		})
 	})

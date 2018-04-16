@@ -2,10 +2,10 @@ package parcel
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -35,38 +35,30 @@ type TarGZipCompressor struct {
 
 // Compress compresses given source in tar.gz
 func (e *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
-	archive, err := ioutil.TempFile("", "parcel")
+	buffer := &bytes.Buffer{}
+	count, err := e.write(fileSystem, buffer)
+
 	if err != nil {
 		return nil, err
 	}
 
-	processed, err := e.writeTo(fileSystem, archive)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err = archive.Seek(0, io.SeekStart); err != nil {
-		_ = archive.Close()
-		return nil, err
-	}
-
-	if processed == 0 {
+	if count == 0 {
 		return nil, nil
 	}
 
 	bundle := &Bundle{
 		Name:   e.Config.Filename,
-		Length: processed,
-		Body:   archive,
+		Length: count,
+		Body:   buffer.Bytes(),
 	}
 
 	return bundle, nil
 }
 
-func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (int, error) {
+func (e *TarGZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int, error) {
 	compressor := gzip.NewWriter(bundle)
 	bundler := tar.NewWriter(compressor)
-	processed := 0
+	count := 0
 
 	err := fileSystem.Walk("/", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -88,27 +80,27 @@ func (e *TarGZipCompressor) writeTo(fileSystem FileSystem, bundle io.Writer) (in
 			return err
 		}
 
-		processed = processed + 1
+		count = count + 1
 		return nil
 	})
 
 	if err != nil {
-		return processed, err
+		return count, err
 	}
 
 	if err = bundler.Flush(); err != nil {
-		return processed, err
+		return count, err
 	}
 
 	if err = compressor.Flush(); err != nil {
-		return processed, err
+		return count, err
 	}
 
 	if ioErr := bundler.Close(); err == nil {
 		err = ioErr
 	}
 
-	return processed, err
+	return count, err
 }
 
 func (e *TarGZipCompressor) walk(bundler *tar.Writer, fileSystem FileSystem, path string, info os.FileInfo) error {

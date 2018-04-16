@@ -31,9 +31,7 @@ var _ = Describe("Manager", func() {
 		bundle, err := compressor.Compress(parcel.Dir("./fixture"))
 		Expect(err).NotTo(HaveOccurred())
 
-		resource, err = ioutil.ReadAll(bundle.Body)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(bundle.Body.Close()).To(Succeed())
+		resource = bundle.Body
 	})
 
 	JustBeforeEach(func() {

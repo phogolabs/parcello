@@ -26,7 +26,7 @@ var _ = Describe("Generator", func() {
 
 		bundle = &parcel.Bundle{
 			Name: "bundle",
-			Body: parcel.NewBufferWith([]byte("hello")),
+			Body: []byte("hello"),
 		}
 
 		generator = &parcel.Generator{

@@ -28,12 +28,6 @@ func (e *Emitter) Emit() error {
 		return nil
 	}
 
-	defer func() {
-		if ioErr := bundle.Body.Close(); err == nil {
-			err = ioErr
-		}
-	}()
-
 	fmt.Fprintf(e.Logger, "Bundling %d resource(s) at 'resource.go'\n", bundle.Length)
 	err = e.Composer.Compose(bundle)
 	return err

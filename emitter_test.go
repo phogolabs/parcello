@@ -24,7 +24,7 @@ var _ = Describe("Emitter", func() {
 
 		bundle = &parcel.Bundle{
 			Name:   "resource",
-			Body:   parcel.NewBufferWith([]byte("resource")),
+			Body:   []byte("resource"),
 			Length: 20,
 		}
 

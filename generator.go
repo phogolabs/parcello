@@ -30,70 +30,72 @@ type Generator struct {
 
 // Compose generates an embedable resource for given directory
 func (g *Generator) Compose(bundle *Bundle) error {
-	filename := fmt.Sprintf("%s.go", bundle.Name)
-
-	w, err := g.FileSystem.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if ioErr := w.Close(); err == nil {
-			err = ioErr
-		}
-	}()
+	template := &bytes.Buffer{}
 
 	if g.Config.InlcudeDocs {
-		fmt.Fprintln(w, "// Package", g.Config.Package, "contains embedded resources")
-		fmt.Fprintln(w, "// Auto-generated at", time.Now().Format(time.UnixDate))
+		fmt.Fprintln(template, "// Package", g.Config.Package, "contains embedded resources")
+		fmt.Fprintln(template, "// Auto-generated at", time.Now().Format(time.UnixDate))
 	}
 
-	fmt.Fprintln(w, "package", g.Config.Package)
-	fmt.Fprintln(w)
-	fmt.Fprintf(w, `import "github.com/phogolabs/parcel"`)
-	fmt.Fprintln(w)
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "func init() {")
-	fmt.Fprintln(w, "\tparcel.AddResource([]byte{")
+	fmt.Fprintln(template, "package", g.Config.Package)
+	fmt.Fprintln(template)
+	fmt.Fprintf(template, "import \"github.com/phogolabs/parcel\"")
+	fmt.Fprintln(template)
+	fmt.Fprintln(template)
+	fmt.Fprintln(template, "func init() {")
+	fmt.Fprintln(template, "\tparcel.AddResource([]byte{")
 
-	reader := bufio.NewReader(bundle.Body)
+	template.Write(g.prepare(bundle.Body))
+
+	fmt.Fprintln(template, "\t})")
+	fmt.Fprintln(template, "}")
+
+	return g.write(bundle.Name, template)
+}
+
+func (g *Generator) prepare(data []byte) []byte {
+	prepared := &bytes.Buffer{}
+	body := bytes.NewBuffer(data)
+	reader := bufio.NewReader(body)
 	buffer := &bytes.Buffer{}
 
 	for {
 		bit, rErr := reader.ReadByte()
 		if rErr == io.EOF {
-			break
+			line := strings.TrimSpace(buffer.String())
+			fmt.Fprintln(prepared, line)
+			return prepared.Bytes()
 		}
 
 		if buffer.Len() == 0 {
-			fmt.Fprint(w, "\t\t")
+			fmt.Fprint(buffer, "\t\t")
 		}
 
 		fmt.Fprintf(buffer, "%d, ", int(bit))
 
 		if buffer.Len() >= 60 {
 			line := strings.TrimSpace(buffer.String())
-			if _, ferr := fmt.Fprintln(w, line); ferr != nil {
-				return ferr
-			}
-
+			fmt.Fprintln(prepared, line)
 			buffer.Reset()
 			continue
 		}
 	}
+}
 
-	if ln := buffer.Len(); ln > 0 && ln < 60 {
-		fmt.Fprintln(buffer)
+func (g *Generator) write(name string, body io.Reader) error {
+	filename := fmt.Sprintf("%s.go", name)
+
+	file, err := g.FileSystem.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
 	}
 
-	line := strings.TrimSpace(buffer.String())
+	defer func() {
+		if ioErr := file.Close(); err == nil {
+			err = ioErr
+		}
+	}()
 
-	buffer.Reset()
-
-	fmt.Fprintln(buffer, line)
-	fmt.Fprintln(buffer, "\t})")
-	fmt.Fprintln(buffer, "}")
-
-	_, err = io.Copy(w, buffer)
+	_, err = io.Copy(file, body)
 	return err
 }

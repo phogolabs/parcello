@@ -41,7 +41,7 @@ type Bundle struct {
 	// Length returns the count of files in the bundle
 	Length int
 	// Body of the resource
-	Body File
+	Body []byte
 }
 
 // File is the bundle file
