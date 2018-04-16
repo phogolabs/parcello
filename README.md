@@ -4,6 +4,7 @@
 ![License][license-img]
 [![Build Status][travis-img]][travis-url]
 [![Coverage][coveralls-img]][coveralls-url]
+[![Go Report Card][report-img]][report-url]
 
 *Golang Resource Bundler*
 
@@ -136,6 +137,8 @@ We are welcome to any contributions. Just fork the
 
 *logo made by [Good Wave][logo-author-url] [CC 3.0][logo-license]*
 
+[report-img]: https://goreportcard.com/badge/github.com/phogolabs/parcel
+[report-url]: https://goreportcard.com/report/github.com/phogolabs/parcel
 [logo-author-url]: https://www.flaticon.com/authors/good-ware
 [logo-license]: http://creativecommons.org/licenses/by/3.0/
 [parcel-url]: https://github.com/phogolabs/parcel
