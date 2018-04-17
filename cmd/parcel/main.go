@@ -30,7 +30,7 @@ func main() {
 		Action:               run,
 		Flags: []cli.Flag{
 			cli.BoolFlag{
-				Name:  "quite, q",
+				Name:  "quiet, q",
 				Usage: "Disable logging",
 			},
 			cli.BoolFlag{
@@ -102,7 +102,7 @@ func run(ctx *cli.Context) error {
 }
 
 func logger(ctx *cli.Context) io.Writer {
-	if ctx.Bool("quite") {
+	if ctx.Bool("quiet") {
 		return ioutil.Discard
 	}
 
