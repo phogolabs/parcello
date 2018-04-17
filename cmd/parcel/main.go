@@ -30,7 +30,7 @@ func main() {
 		Action:               run,
 		Flags: []cli.Flag{
 			cli.BoolFlag{
-				Name:  "quite, q",
+				Name:  "quiet, q",
 				Usage: "Disable logging",
 			},
 			cli.BoolFlag{
