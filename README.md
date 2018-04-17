@@ -116,7 +116,7 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --quite, -q                     Disable logging
+   --quiet, -q                     Disable logging
    --recursive, -r                 Embed the resources recursively
    --resource-dir value, -d value  Path to directory (default: ".")
    --bundle-dir value, -b value    Path to bundle directory (default: ".")
