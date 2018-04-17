@@ -1,9 +1,5 @@
 package parcel
 
-import (
-	"io"
-)
-
 // ResourceManager keeps track of all resources
 var ResourceManager = &Manager{}
 
@@ -16,7 +12,7 @@ func AddResource(resource Binary) {
 }
 
 // Open opens an embedded resource for read
-func Open(name string) (io.ReadCloser, error) {
+func Open(name string) (File, error) {
 	return ResourceManager.Open(name)
 }
 
