@@ -102,7 +102,7 @@ func run(ctx *cli.Context) error {
 }
 
 func logger(ctx *cli.Context) io.Writer {
-	if ctx.Bool("quite") {
+	if ctx.Bool("quiet") {
 		return ioutil.Discard
 	}
 
