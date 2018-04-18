@@ -74,7 +74,7 @@ func (m *Manager) Root(name string) (*Manager, error) {
 }
 
 // Open opens an embedded resource for read
-func (m *Manager) Open(name string) (File, error) {
+func (m *Manager) Open(name string) (ReadOnlyFile, error) {
 	return m.OpenFile(name, 0, 0)
 }
 
@@ -84,7 +84,7 @@ func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error
 		if node.dir {
 			return nil, fmt.Errorf("Cannot open directory '%s'", name)
 		}
-		return NewBufferWith(node.content), nil
+		return NewBuffer(node), nil
 	}
 
 	return nil, fmt.Errorf("File '%s' not found", name)

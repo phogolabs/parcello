@@ -20,9 +20,9 @@ deploying just a single binary rather than many files.
 
 Note that we may introduce breaking changes until we reach v1.0.
 
-* Rename the tool in order not to clash with [parcel-bundler](https://github.com/parcel-bundler/parcel)
-* Support [http.FileSystem](https://golang.org/pkg/net/http/#FileSystem)
-* Support embedded COFF resources
+- [ ] Rename the tool in order not to clash with [parcel-bundler](https://github.com/parcel-bundler/parcel)
+- [x] Support [http.FileSystem](https://golang.org/pkg/net/http/#FileSystem)
+- [ ] Support embedded COFF resources
 
 ## Installation
 

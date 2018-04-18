@@ -20,7 +20,7 @@ var _ = Describe("Emitter", func() {
 	)
 
 	BeforeEach(func() {
-		resource = parcel.NewBufferWith([]byte("data"))
+		resource = parcel.NewBuffer(parcel.NewNodeFile("resource", []byte("data")))
 
 		bundle = &parcel.Bundle{
 			Name:   "resource",

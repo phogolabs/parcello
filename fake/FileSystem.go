@@ -2,6 +2,7 @@
 package fake
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -10,6 +11,15 @@ import (
 )
 
 type FileSystem struct {
+	OpenStub        func(name string) (http.File, error)
+	openMutex       sync.RWMutex
+	openArgsForCall []struct {
+		name string
+	}
+	openReturns struct {
+		result1 http.File
+		result2 error
+	}
 	WalkStub        func(dir string, fn filepath.WalkFunc) error
 	walkMutex       sync.RWMutex
 	walkArgsForCall []struct {
@@ -32,6 +42,39 @@ type FileSystem struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FileSystem) Open(name string) (http.File, error) {
+	fake.openMutex.Lock()
+	fake.openArgsForCall = append(fake.openArgsForCall, struct {
+		name string
+	}{name})
+	fake.recordInvocation("Open", []interface{}{name})
+	fake.openMutex.Unlock()
+	if fake.OpenStub != nil {
+		return fake.OpenStub(name)
+	}
+	return fake.openReturns.result1, fake.openReturns.result2
+}
+
+func (fake *FileSystem) OpenCallCount() int {
+	fake.openMutex.RLock()
+	defer fake.openMutex.RUnlock()
+	return len(fake.openArgsForCall)
+}
+
+func (fake *FileSystem) OpenArgsForCall(i int) string {
+	fake.openMutex.RLock()
+	defer fake.openMutex.RUnlock()
+	return fake.openArgsForCall[i].name
+}
+
+func (fake *FileSystem) OpenReturns(result1 http.File, result2 error) {
+	fake.OpenStub = nil
+	fake.openReturns = struct {
+		result1 http.File
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FileSystem) Walk(dir string, fn filepath.WalkFunc) error {
@@ -105,6 +148,8 @@ func (fake *FileSystem) OpenFileReturns(result1 parcel.File, result2 error) {
 func (fake *FileSystem) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.openMutex.RLock()
+	defer fake.openMutex.RUnlock()
 	fake.walkMutex.RLock()
 	defer fake.walkMutex.RUnlock()
 	fake.openFileMutex.RLock()

@@ -11,6 +11,14 @@ var _ FileSystem = Dir("")
 // specific directory tree.
 type Dir string
 
+// Open opens the named file for reading. If successful, methods on
+// the returned file can be used for reading; the associated file
+// descriptor has mode O_RDONLY.
+// If there is an error, it will be of type *PathError.
+func (d Dir) Open(name string) (ReadOnlyFile, error) {
+	return d.OpenFile(name, os.O_RDONLY, 0)
+}
+
 // OpenFile is the generalized open call; most users will use Open
 func (d Dir) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	dir := filepath.Join(string(d), filepath.Dir(name))

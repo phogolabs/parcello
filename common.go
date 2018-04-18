@@ -12,7 +12,7 @@ func AddResource(resource Binary) {
 }
 
 // Open opens an embedded resource for read
-func Open(name string) (File, error) {
+func Open(name string) (ReadOnlyFile, error) {
 	return ResourceManager.Open(name)
 }
 

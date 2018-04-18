@@ -19,13 +19,15 @@ var _ = Describe("Model", func() {
 		})
 
 		It("creates a directory node", func() {
-			node := parcel.NewNodeDir("jack")
-			Expect(node.Name()).To(Equal("jack"))
+			dir := parcel.NewNodeDir("jack")
+			Expect(dir.Name()).To(Equal("jack"))
+			Expect(dir.IsDir()).To(BeTrue())
 		})
 
 		It("creates a file node", func() {
-			node := parcel.NewNodeFile("jack", []byte{})
-			Expect(node.Name()).To(Equal("jack"))
+			file := parcel.NewNodeFile("jack", []byte{1})
+			Expect(file.Name()).To(Equal("jack"))
+			Expect(file.Size()).To(Equal(int64(1)))
 		})
 
 		It("returns the Name successfully", func() {
@@ -33,7 +35,9 @@ var _ = Describe("Model", func() {
 		})
 
 		It("returns the Size successfully", func() {
-			Expect(node.Size()).To(BeZero())
+			file := parcel.NewNodeFile("jack", []byte{1})
+			Expect(file.Name()).To(Equal("jack"))
+			Expect(file.Size()).To(Equal(int64(1)))
 		})
 
 		It("returns the Mode successfully", func() {
@@ -54,37 +58,93 @@ var _ = Describe("Model", func() {
 	})
 
 	Describe("Buffer", func() {
-		It("reads successfully", func() {
-			buffer := parcel.NewBufferWith([]byte("hello"))
-			data, err := ioutil.ReadAll(buffer)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(data)).To(Equal("hello"))
+		var buffer *parcel.Buffer
+
+		Context("when the node is file", func() {
+			BeforeEach(func() {
+				node := parcel.NewNodeFile("sample.txt", []byte("hello"))
+				buffer = parcel.NewBuffer(node)
+			})
+
+			It("reads successfully", func() {
+				data, err := ioutil.ReadAll(buffer)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(data)).To(Equal("hello"))
+			})
+
+			It("writes successfully", func() {
+				fmt.Fprintf(buffer, ",jack")
+
+				data, err := ioutil.ReadAll(buffer)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(data)).To(Equal("hello,jack"))
+			})
+
+			It("closes successfully", func() {
+				Expect(buffer.Close()).To(Succeed())
+			})
+
+			It("seeks successfully", func() {
+				n, err := buffer.Seek(0, 0)
+				Expect(err).To(BeNil())
+				Expect(n).To(BeZero())
+			})
+
+			It("returns as string", func() {
+				Expect(buffer.String()).To(Equal("hello"))
+			})
+
+			It("reads the directory fails", func() {
+				files, err := buffer.Readdir(-1)
+				Expect(err).To(MatchError("Not supported"))
+				Expect(files).To(HaveLen(0))
+			})
+
+			It("returns the information successfully", func() {
+				info, err := buffer.Stat()
+				Expect(err).To(BeNil())
+				Expect(info.IsDir()).To(BeFalse())
+				Expect(info.Name()).To(Equal("sample.txt"))
+			})
 		})
 
-		It("writes successfully", func() {
-			buffer := parcel.NewBufferWith([]byte("hello"))
-			fmt.Fprintf(buffer, ",jack")
+		Context("when the node is directory", func() {
+			BeforeEach(func() {
+				child1 := parcel.NewNodeFile("sample.txt", []byte("hello"))
+				child2 := parcel.NewNodeFile("report.txt", []byte("world"))
+				node := parcel.NewNodeDir("documents", child1, child2)
+				buffer = parcel.NewBuffer(node)
+			})
 
-			data, err := ioutil.ReadAll(buffer)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(data)).To(Equal("hello,jack"))
-		})
+			It("reads the directory successfully", func() {
+				files, err := buffer.Readdir(-1)
+				Expect(err).To(BeNil())
+				Expect(files).To(HaveLen(2))
 
-		It("closes successfully", func() {
-			buffer := parcel.NewBufferWith([]byte("hello"))
-			Expect(buffer.Close()).To(Succeed())
-		})
+				info := files[0]
+				Expect(info.Name()).To(Equal("sample.txt"))
 
-		It("seeks successfully", func() {
-			buffer := parcel.NewBufferWith([]byte("hello"))
-			n, err := buffer.Seek(0, 0)
-			Expect(err).To(BeNil())
-			Expect(n).To(BeZero())
-		})
+				info = files[1]
+				Expect(info.Name()).To(Equal("report.txt"))
+			})
 
-		It("returns as string", func() {
-			buffer := parcel.NewBufferWith([]byte("hello"))
-			Expect(buffer.String()).To(Equal("hello"))
+			Context("when the n is 1", func() {
+				It("reads the directory successfully", func() {
+					files, err := buffer.Readdir(1)
+					Expect(err).To(BeNil())
+					Expect(files).To(HaveLen(1))
+
+					info := files[0]
+					Expect(info.Name()).To(Equal("sample.txt"))
+				})
+			})
+
+			It("returns the information successfully", func() {
+				info, err := buffer.Stat()
+				Expect(err).To(BeNil())
+				Expect(info.IsDir()).To(BeTrue())
+				Expect(info.Name()).To(Equal("documents"))
+			})
 		})
 	})
 })

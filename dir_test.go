@@ -22,6 +22,18 @@ var _ = Describe("Dir", func() {
 		Expect(ioutil.WriteFile(filepath.Join(path, "sample.txt"), []byte("test"), 0600)).To(Succeed())
 	})
 
+	Context("Open", func() {
+		It("opens a file successfully", func() {
+			file, err := dir.Open("sample.txt")
+			Expect(err).To(BeNil())
+
+			content, err := ioutil.ReadAll(file)
+			Expect(err).To(BeNil())
+			Expect(string(content)).To(Equal("test"))
+			Expect(file.Close()).To(Succeed())
+		})
+	})
+
 	Context("OpenFile", func() {
 		It("opens a file successfully", func() {
 			file, err := dir.OpenFile("sample.txt", os.O_RDONLY, 0)

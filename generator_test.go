@@ -19,11 +19,6 @@ var _ = Describe("Generator", func() {
 	)
 
 	BeforeEach(func() {
-		buffer = parcel.NewBuffer()
-
-		fileSystem = &fake.FileSystem{}
-		fileSystem.OpenFileReturns(buffer, nil)
-
 		bundle = &parcel.Bundle{
 			Name: "bundle",
 			Body: []byte{
@@ -68,6 +63,11 @@ var _ = Describe("Generator", func() {
 				254, 190, 163, 25, 108, 232, 0, 0, 0, 0, 0, 255, 255,
 			},
 		}
+
+		buffer = parcel.NewBuffer(parcel.NewNodeFile("resource", []byte{}))
+
+		fileSystem = &fake.FileSystem{}
+		fileSystem.OpenFileReturns(buffer, nil)
 
 		generator = &parcel.Generator{
 			FileSystem: fileSystem,

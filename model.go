@@ -2,7 +2,9 @@ package parcel
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,11 +17,24 @@ import (
 
 // FileSystem provides primitives to work with the underlying file system
 type FileSystem interface {
+	// A FileSystem implements access to a collection of named files.
+	http.FileSystem
 	// Walk walks the file tree rooted at root, calling walkFn for each file or
 	// directory in the tree, including root.
 	Walk(dir string, fn filepath.WalkFunc) error
 	// OpenFile is the generalized open call; most users will use Open
 	OpenFile(name string, flag int, perm os.FileMode) (File, error)
+}
+
+// ReadOnlyFile is the bundle file
+type ReadOnlyFile = http.File
+
+// File is the bundle file
+type File interface {
+	// A File is returned by a FileSystem's Open method and can be
+	ReadOnlyFile
+	// Writer is the interface that wraps the basic Write method.
+	io.Writer
 }
 
 // Composer composes the resources
@@ -44,14 +59,6 @@ type Bundle struct {
 	Body []byte
 }
 
-// File is the bundle file
-type File interface {
-	io.Reader
-	io.Writer
-	io.Seeker
-	io.Closer
-}
-
 // Binary represents a resource blob content
 type Binary = []byte
 
@@ -64,10 +71,11 @@ type Node struct {
 }
 
 // NewNodeDir creates a new directory node
-func NewNodeDir(name string) *Node {
+func NewNodeDir(name string, children ...*Node) *Node {
 	return &Node{
-		name: name,
-		dir:  true,
+		name:     name,
+		dir:      true,
+		children: children,
 	}
 }
 
@@ -110,22 +118,19 @@ func (n *Node) Sys() interface{} {
 	return nil
 }
 
+var _ File = &Buffer{}
+
 // Buffer represents a *bytes.Buffer that can be closed
 type Buffer struct {
+	node   *Node
 	buffer *bytes.Buffer
 }
 
 // NewBuffer creates a new Buffer
-func NewBuffer() *Buffer {
+func NewBuffer(node *Node) *Buffer {
 	return &Buffer{
-		buffer: &bytes.Buffer{},
-	}
-}
-
-// NewBufferWith creates a new Buffer with data
-func NewBufferWith(data []byte) *Buffer {
-	return &Buffer{
-		buffer: bytes.NewBuffer(data),
+		node:   node,
+		buffer: bytes.NewBuffer(node.content),
 	}
 }
 
@@ -150,7 +155,33 @@ func (b *Buffer) String() string {
 }
 
 // Seek sets the offset for the next Read or Write to offset,
-// interpreted according to whence.
+// interpreted according to whence. (noop).
 func (b *Buffer) Seek(offset int64, whence int) (int64, error) {
 	return 0, nil
+}
+
+// Readdir reads the contents of the directory associated with file and
+// returns a slice of up to n FileInfo values, as would be returned
+func (b *Buffer) Readdir(n int) ([]os.FileInfo, error) {
+	info := []os.FileInfo{}
+
+	if !b.node.IsDir() {
+		return info, fmt.Errorf("Not supported")
+	}
+
+	for index, node := range b.node.children {
+		if index >= n && n > 0 {
+			break
+		}
+
+		info = append(info, node)
+	}
+
+	return info, nil
+}
+
+// Stat returns the FileInfo structure describing file.
+// If there is an error, it will be of type *PathError.
+func (b *Buffer) Stat() (os.FileInfo, error) {
+	return b.node, nil
 }
