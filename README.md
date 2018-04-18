@@ -16,6 +16,14 @@ Parcel is a simple resource manager for Golang that allows embedding assets
 like SQL, bash scripts and images. That allows easy release management by
 deploying just a single binary rather than many files.
 
+## Roadmap
+
+Note that we may introduce breaking changes until we reach v1.0.
+
+* Rename the tool in order not to clash with [parcel-bundler](https://github.com/parcel-bundler/parcel)
+* Support [http.FileSystem](https://golang.org/pkg/net/http/#FileSystem)
+* Support embedded COFF resources
+
 ## Installation
 
 #### GitHub
