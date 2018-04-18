@@ -130,8 +130,8 @@ var _ = Describe("Manager", func() {
 		Context("when is trying to open a directory", func() {
 			It("returns an error", func() {
 				file, err := manager.Open("/resource/reports/")
-				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("Cannot open directory '/resource/reports/'"))
+				Expect(file).NotTo(BeNil())
+				Expect(err).To(BeNil())
 			})
 		})
 

@@ -81,9 +81,6 @@ func (m *Manager) Open(name string) (ReadOnlyFile, error) {
 // OpenFile is the generalized open call; most users will use Open
 func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	if node := find(split(name), m.root); node != nil {
-		if node.dir {
-			return nil, fmt.Errorf("Cannot open directory '%s'", name)
-		}
 		return NewBuffer(node), nil
 	}
 

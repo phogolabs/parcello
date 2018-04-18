@@ -86,6 +86,8 @@ interface:
 ```golang
 // FileSystem provides primitives to work with the underlying file system
 type FileSystem interface {
+	// A FileSystem implements access to a collection of named files.
+	http.FileSystem
 	// Walk walks the file tree rooted at root, calling walkFn for each file or
 	// directory in the tree, including root.
 	Walk(dir string, fn filepath.WalkFunc) error
@@ -118,7 +120,7 @@ USAGE:
    parcello [global options]
 
 VERSION:
-   0.1
+   0.4
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
@@ -136,7 +138,7 @@ GLOBAL OPTIONS:
 
 ## Example
 
-You can check working example in our [OAK package](https://github.com/phogolabs/oak/tree/master/example).
+You can check working [example](example).
 
 ## Contributing
 
