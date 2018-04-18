@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcello"
 	"github.com/urfave/cli"
 )
 
@@ -18,10 +18,10 @@ const (
 
 func main() {
 	app := &cli.App{
-		Name:                 "parcel",
-		HelpName:             "parcel",
+		Name:                 "parcello",
+		HelpName:             "parcello",
 		Usage:                "Golang Resource Bundler",
-		UsageText:            "parcel [global options]",
+		UsageText:            "parcello [global options]",
 		Version:              "0.2",
 		BashComplete:         cli.DefaultAppComplete,
 		EnableBashCompletion: true,
@@ -74,18 +74,18 @@ func run(ctx *cli.Context) error {
 
 	_, packageName := filepath.Split(bundleDir)
 
-	generator := &parcel.Emitter{
+	generator := &parcello.Emitter{
 		Logger:     logger(ctx),
-		FileSystem: parcel.Dir(resourceDir),
-		Composer: &parcel.Generator{
-			FileSystem: parcel.Dir(bundleDir),
-			Config: &parcel.GeneratorConfig{
+		FileSystem: parcello.Dir(resourceDir),
+		Composer: &parcello.Generator{
+			FileSystem: parcello.Dir(bundleDir),
+			Config: &parcello.GeneratorConfig{
 				Package:     packageName,
 				InlcudeDocs: ctx.BoolT("include-docs"),
 			},
 		},
-		Compressor: &parcel.TarGZipCompressor{
-			Config: &parcel.CompressorConfig{
+		Compressor: &parcello.TarGZipCompressor{
+			Config: &parcello.CompressorConfig{
 				Logger:         logger(ctx),
 				Filename:       "resource",
 				IgnorePatterns: ctx.StringSlice("ignore"),

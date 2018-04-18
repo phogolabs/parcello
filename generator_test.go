@@ -1,4 +1,4 @@
-package parcel_test
+package parcello_test
 
 import (
 	"fmt"
@@ -6,20 +6,20 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/phogolabs/parcel"
-	"github.com/phogolabs/parcel/fake"
+	"github.com/phogolabs/parcello"
+	"github.com/phogolabs/parcello/fake"
 )
 
 var _ = Describe("Generator", func() {
 	var (
-		generator  *parcel.Generator
-		bundle     *parcel.Bundle
-		buffer     *parcel.Buffer
+		generator  *parcello.Generator
+		bundle     *parcello.Bundle
+		buffer     *parcello.Buffer
 		fileSystem *fake.FileSystem
 	)
 
 	BeforeEach(func() {
-		bundle = &parcel.Bundle{
+		bundle = &parcello.Bundle{
 			Name: "bundle",
 			Body: []byte{
 				31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 212, 146, 223, 171, 218,
@@ -64,14 +64,14 @@ var _ = Describe("Generator", func() {
 			},
 		}
 
-		buffer = parcel.NewBuffer(parcel.NewNodeFile("resource", []byte{}))
+		buffer = parcello.NewBuffer(parcello.NewNodeFile("resource", []byte{}))
 
 		fileSystem = &fake.FileSystem{}
 		fileSystem.OpenFileReturns(buffer, nil)
 
-		generator = &parcel.Generator{
+		generator = &parcello.Generator{
 			FileSystem: fileSystem,
-			Config: &parcel.GeneratorConfig{
+			Config: &parcello.GeneratorConfig{
 				Package: "mypackage",
 			},
 		}
@@ -88,7 +88,7 @@ var _ = Describe("Generator", func() {
 
 		Expect(buffer.String()).To(ContainSubstring("package mypackage"))
 		Expect(buffer.String()).To(ContainSubstring("func init()"))
-		Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
+		Expect(buffer.String()).To(ContainSubstring("parcello.AddResource"))
 		Expect(buffer.String()).NotTo(ContainSubstring("// Auto-generated"))
 	})
 
@@ -101,7 +101,7 @@ var _ = Describe("Generator", func() {
 			Expect(generator.Compose(bundle)).To(Succeed())
 			Expect(buffer.String()).To(ContainSubstring("package mypackage"))
 			Expect(buffer.String()).To(ContainSubstring("func init()"))
-			Expect(buffer.String()).To(ContainSubstring("parcel.AddResource"))
+			Expect(buffer.String()).To(ContainSubstring("parcello.AddResource"))
 			Expect(buffer.String()).To(ContainSubstring("// Auto-generated"))
 		})
 	})

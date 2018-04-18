@@ -1,4 +1,4 @@
-package parcel_test
+package parcello_test
 
 import (
 	"fmt"
@@ -7,28 +7,28 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcello"
 )
 
 var _ = Describe("Manager", func() {
 	var (
-		manager  *parcel.Manager
+		manager  *parcello.Manager
 		resource []byte
 	)
 
 	BeforeEach(func() {
-		manager = &parcel.Manager{}
+		manager = &parcello.Manager{}
 
 		var err error
-		compressor := parcel.TarGZipCompressor{
-			Config: &parcel.CompressorConfig{
+		compressor := parcello.TarGZipCompressor{
+			Config: &parcello.CompressorConfig{
 				Logger:   ioutil.Discard,
 				Filename: "bundle",
 				Recurive: true,
 			},
 		}
 
-		bundle, err := compressor.Compress(parcel.Dir("./fixture"))
+		bundle, err := compressor.Compress(parcello.Dir("./fixture"))
 		Expect(err).NotTo(HaveOccurred())
 
 		resource = bundle.Body
@@ -51,7 +51,7 @@ var _ = Describe("Manager", func() {
 			})
 
 			It("panics", func() {
-				Expect(func() { parcel.AddResource([]byte("lol")) }).To(Panic())
+				Expect(func() { parcello.AddResource([]byte("lol")) }).To(Panic())
 			})
 		})
 	})
@@ -80,8 +80,8 @@ var _ = Describe("Manager", func() {
 
 		Context("when the manager is global", func() {
 			It("returns a valid sub-manager", func() {
-				parcel.AddResource(resource)
-				group := parcel.Root("/resource")
+				parcello.AddResource(resource)
+				group := parcello.Root("/resource")
 
 				file, err := group.Open("/reports/2018.txt")
 				Expect(file).NotTo(BeNil())
@@ -94,7 +94,7 @@ var _ = Describe("Manager", func() {
 
 			Context("when group is a file not a directory", func() {
 				It("panics", func() {
-					Expect(func() { parcel.Root("/resource/reports/2018.txt") }).To(Panic())
+					Expect(func() { parcello.Root("/resource/reports/2018.txt") }).To(Panic())
 				})
 			})
 		})
@@ -111,7 +111,7 @@ var _ = Describe("Manager", func() {
 
 		Context("when the global resource is empty", func() {
 			It("returns an error", func() {
-				file, err := parcel.Open("migration.sql")
+				file, err := parcello.Open("migration.sql")
 				Expect(file).To(BeNil())
 				Expect(err).To(MatchError("File 'migration.sql' not found"))
 			})

@@ -1,4 +1,4 @@
-# Parcel
+# Parcello
 
 [![Documentation][godoc-img]][godoc-url]
 ![License][license-img]
@@ -8,7 +8,7 @@
 
 *Golang Resource Bundler*
 
-[![Parcel][parcel-img]][parcel-url]
+[![Parcel][parcello-img]][parcello-url]
 
 ## Overview
 
@@ -20,7 +20,7 @@ deploying just a single binary rather than many files.
 
 Note that we may introduce breaking changes until we reach v1.0.
 
-- [ ] Rename the tool in order not to clash with [parcel-bundler](https://github.com/parcel-bundler/parcel)
+- [x] Rename the tool in order not to clash with [parcel-bundler](https://github.com/parcel-bundler/parcel)
 - [x] Support [http.FileSystem](https://golang.org/pkg/net/http/#FileSystem)
 - [ ] Support embedded COFF resources
 
@@ -29,23 +29,23 @@ Note that we may introduce breaking changes until we reach v1.0.
 #### GitHub
 
 ```console
-$ go get -u github.com/phogolabs/parcel
-$ go install github.com/phogolabs/parcel/cmd/parcel
+$ go get -u github.com/phogolabs/parcello
+$ go install github.com/phogolabs/parcello/cmd/parcello
 ```
 #### Homebrew (for Mac OS X)
 
 ```console
 $ brew tap phogolabs/tap
-$ brew install parcel
+$ brew install parcello
 ```
 
 ## Usage
 
-You can use the parcel command line interface to bundle the desired resources
+You can use the parcello command line interface to bundle the desired resources
 recursively:
 
 ```console
-$ parcel -r -d <resource_dir_source> -b <bundle_dir_destination>
+$ parcello -r -d <resource_dir_source> -b <bundle_dir_destination>
 ```
 
 However, the best way to use the tool is via `go generate`. In order to embed all
@@ -56,7 +56,7 @@ following comment:
 // Package database contains the database artefacts of GOM as embedded resource
 package database
 
-//go:generate parcel -r
+//go:generate parcello -r
 ```
 
 When you run:
@@ -68,7 +68,7 @@ $ go generate ./...
 The tools will create a `resource.go` file that contains
 all embedded resource in that directory and its
 subdirectories as `tar.gz` archive which is registered in
-[parcel.ResourceManager](https://github.com/phogolabs/parcel/blob/master/common.go#L6).
+[parcello.ResourceManager](https://github.com/phogolabs/parcello/blob/master/common.go#L6).
 
 You can read the content in the following way:
 
@@ -76,11 +76,11 @@ You can read the content in the following way:
 // Import the package that includes 'resource.go'
 import _ "database"
 
-file, err := parcel.Open("your_sub_directory_name/your_file_name")
+file, err := parcello.Open("your_sub_directory_name/your_file_name")
 ```
 
-The `parcel` package provides an abstraction of
-[FileSystem](https://godoc.org/github.com/phogolabs/parcel#FileSystem)
+The `parcello` package provides an abstraction of
+[FileSystem](https://godoc.org/github.com/phogolabs/parcello#FileSystem)
 interface:
 
 ```golang
@@ -96,8 +96,8 @@ type FileSystem interface {
 
 That is implemented by the following:
 
-- [parcel.Manager](https://godoc.org/github.com/phogolabs/parcel#Manager) which provides an access to the bundled resources.
-- [parcel.Dir](https://godoc.org/github.com/phogolabs/parcel#Dir) which provides an access to the underlying file system.
+- [parcello.Manager](https://godoc.org/github.com/phogolabs/parcello#Manager) which provides an access to the bundled resources.
+- [parcello.Dir](https://godoc.org/github.com/phogolabs/parcello#Dir) which provides an access to the underlying file system.
 
 That allows easy replacement of the file system with the bundled resources and
 vice versa.
@@ -109,13 +109,13 @@ time may increase significantly. We are working on better approach by using
 ## Command Line Interface
 
 ```console
-$ parcel -h
+$ parcello -h
 
 NAME:
-   parcel - Golang Resource Bundler
+   parcello - Golang Resource Bundler
 
 USAGE:
-   parcel [global options]
+   parcello [global options]
 
 VERSION:
    0.1
@@ -141,22 +141,22 @@ You can check working example in our [OAK package](https://github.com/phogolabs/
 ## Contributing
 
 We are welcome to any contributions. Just fork the
-[project](https://github.com/phogolabs/parcel).
+[project](https://github.com/phogolabs/parcello).
 
 *logo made by [Good Wave][logo-author-url] [CC 3.0][logo-license]*
 
-[report-img]: https://goreportcard.com/badge/github.com/phogolabs/parcel
-[report-url]: https://goreportcard.com/report/github.com/phogolabs/parcel
+[report-img]: https://goreportcard.com/badge/github.com/phogolabs/parcello
+[report-url]: https://goreportcard.com/report/github.com/phogolabs/parcello
 [logo-author-url]: https://www.flaticon.com/authors/good-ware
 [logo-license]: http://creativecommons.org/licenses/by/3.0/
-[parcel-url]: https://github.com/phogolabs/parcel
-[parcel-img]: doc/img/logo.png
-[codecov-url]: https://codecov.io/gh/phogolabs/parcel
-[codecov-img]: https://codecov.io/gh/phogolabs/parcel/branch/master/graph/badge.svg
-[travis-img]: https://travis-ci.org/phogolabs/parcel.svg?branch=master
-[travis-url]: https://travis-ci.org/phogolabs/parcel
-[parcel-url]: https://github.com/phogolabs/parcel
-[godoc-url]: https://godoc.org/github.com/phogolabs/parcel
-[godoc-img]: https://godoc.org/github.com/phogolabs/parcel?status.svg
+[parcello-url]: https://github.com/phogolabs/parcello
+[parcello-img]: doc/img/logo.png
+[codecov-url]: https://codecov.io/gh/phogolabs/parcello
+[codecov-img]: https://codecov.io/gh/phogolabs/parcello/branch/master/graph/badge.svg
+[travis-img]: https://travis-ci.org/phogolabs/parcello.svg?branch=master
+[travis-url]: https://travis-ci.org/phogolabs/parcello
+[parcello-url]: https://github.com/phogolabs/parcello
+[godoc-url]: https://godoc.org/github.com/phogolabs/parcello
+[godoc-img]: https://godoc.org/github.com/phogolabs/parcello?status.svg
 [license-img]: https://img.shields.io/badge/license-MIT-blue.svg
 [software-license-url]: LICENSE

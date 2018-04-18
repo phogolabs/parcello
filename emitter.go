@@ -1,4 +1,4 @@
-package parcel
+package parcello
 
 import (
 	"fmt"

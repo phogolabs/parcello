@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcello"
 )
 
 type File struct {
@@ -285,4 +285,4 @@ func (fake *File) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ parcel.File = new(File)
+var _ parcello.File = new(File)

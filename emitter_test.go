@@ -1,28 +1,28 @@
-package parcel_test
+package parcello_test
 
 import (
 	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/phogolabs/parcel"
-	"github.com/phogolabs/parcel/fake"
+	"github.com/phogolabs/parcello"
+	"github.com/phogolabs/parcello/fake"
 )
 
 var _ = Describe("Emitter", func() {
 	var (
-		emitter    *parcel.Emitter
+		emitter    *parcello.Emitter
 		composer   *fake.Composer
 		compressor *fake.Compressor
 		fileSystem *fake.FileSystem
-		resource   *parcel.Buffer
-		bundle     *parcel.Bundle
+		resource   *parcello.Buffer
+		bundle     *parcello.Bundle
 	)
 
 	BeforeEach(func() {
-		resource = parcel.NewBuffer(parcel.NewNodeFile("resource", []byte("data")))
+		resource = parcello.NewBuffer(parcello.NewNodeFile("resource", []byte("data")))
 
-		bundle = &parcel.Bundle{
+		bundle = &parcello.Bundle{
 			Name:   "resource",
 			Body:   []byte("resource"),
 			Length: 20,
@@ -36,7 +36,7 @@ var _ = Describe("Emitter", func() {
 		fileSystem = &fake.FileSystem{}
 		fileSystem.OpenFileReturns(resource, nil)
 
-		emitter = &parcel.Emitter{
+		emitter = &parcello.Emitter{
 			Logger:     GinkgoWriter,
 			Compressor: compressor,
 			Composer:   composer,

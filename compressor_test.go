@@ -1,4 +1,4 @@
-package parcel_test
+package parcello_test
 
 import (
 	"archive/tar"
@@ -9,18 +9,18 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/phogolabs/parcel"
-	"github.com/phogolabs/parcel/fake"
+	"github.com/phogolabs/parcello"
+	"github.com/phogolabs/parcello/fake"
 )
 
 var _ = Describe("TarGZipCompressor", func() {
 	var (
-		compressor *parcel.TarGZipCompressor
+		compressor *parcello.TarGZipCompressor
 	)
 
 	BeforeEach(func() {
-		compressor = &parcel.TarGZipCompressor{
-			Config: &parcel.CompressorConfig{
+		compressor = &parcello.TarGZipCompressor{
+			Config: &parcello.CompressorConfig{
 				Logger:   GinkgoWriter,
 				Filename: "bundle",
 				Recurive: true,
@@ -29,7 +29,7 @@ var _ = Describe("TarGZipCompressor", func() {
 	})
 
 	It("compresses a given hierarchy", func() {
-		fileSystem := parcel.Dir("./fixture")
+		fileSystem := parcello.Dir("./fixture")
 
 		bundle, err := compressor.Compress(fileSystem)
 		Expect(err).To(BeNil())
@@ -66,7 +66,7 @@ var _ = Describe("TarGZipCompressor", func() {
 	Context("whene ingore pattern is provided", func() {
 		It("ignores that files", func() {
 			compressor.Config.IgnorePatterns = []string{"*/**/*.txt"}
-			fileSystem := parcel.Dir("./fixture")
+			fileSystem := parcello.Dir("./fixture")
 
 			bundle, err := compressor.Compress(fileSystem)
 			Expect(err).To(BeNil())
@@ -99,7 +99,7 @@ var _ = Describe("TarGZipCompressor", func() {
 		Context("when the pattern is directory", func() {
 			It("ignores the directory and its files", func() {
 				compressor.Config.IgnorePatterns = []string{"resource/templates/**/*"}
-				fileSystem := parcel.Dir("./fixture")
+				fileSystem := parcello.Dir("./fixture")
 
 				bundle, err := compressor.Compress(fileSystem)
 				Expect(err).To(BeNil())
@@ -130,7 +130,7 @@ var _ = Describe("TarGZipCompressor", func() {
 	Context("when the pattern is invalid", func() {
 		It("returns an error", func() {
 			compressor.Config.IgnorePatterns = []string{"[*"}
-			fileSystem := parcel.Dir("./fixture")
+			fileSystem := parcello.Dir("./fixture")
 
 			bundle, err := compressor.Compress(fileSystem)
 			Expect(err).To(MatchError("syntax error in pattern"))
@@ -142,7 +142,7 @@ var _ = Describe("TarGZipCompressor", func() {
 		It("does not go through the hierarchy", func() {
 			compressor.Config.Recurive = false
 
-			fileSystem := parcel.Dir("./fixture")
+			fileSystem := parcello.Dir("./fixture")
 
 			bundle, err := compressor.Compress(fileSystem)
 			Expect(err).To(BeNil())
@@ -153,7 +153,7 @@ var _ = Describe("TarGZipCompressor", func() {
 	Context("when opening file fails", func() {
 		It("return the error", func() {
 			fileSystem := &fake.FileSystem{}
-			fileSystem.WalkStub = parcel.Dir("./fixture").Walk
+			fileSystem.WalkStub = parcello.Dir("./fixture").Walk
 			fileSystem.OpenFileReturns(nil, fmt.Errorf("Oh no!"))
 
 			binary, err := compressor.Compress(fileSystem)

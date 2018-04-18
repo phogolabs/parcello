@@ -1,4 +1,4 @@
-package parcel_test
+package parcello_test
 
 import (
 	"testing"

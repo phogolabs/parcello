@@ -1,4 +1,4 @@
-package parcel
+package parcello
 
 // ResourceManager keeps track of all resources
 var ResourceManager = &Manager{}

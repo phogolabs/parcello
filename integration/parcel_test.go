@@ -64,7 +64,7 @@ var _ = Describe("Parcel", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(data)).To(ContainSubstring("// Auto-generated"))
 		Expect(string(data)).To(ContainSubstring(fmt.Sprintf("package %s", filepath.Base(cmd.Dir))))
-		Expect(string(data)).To(ContainSubstring("parcel.AddResource"))
+		Expect(string(data)).To(ContainSubstring("parcello.AddResource"))
 	})
 
 	Context("when the commands.sql is ignored", func() {
@@ -98,7 +98,7 @@ var _ = Describe("Parcel", func() {
 
 			data, err := ioutil.ReadFile(resource)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(data)).To(ContainSubstring("parcel.AddResource"))
+			Expect(string(data)).To(ContainSubstring("parcello.AddResource"))
 			Expect(string(data)).NotTo(ContainSubstring("// Auto-generated"))
 		})
 	})

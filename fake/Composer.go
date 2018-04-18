@@ -4,14 +4,14 @@ package fake
 import (
 	"sync"
 
-	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcello"
 )
 
 type Composer struct {
-	ComposeStub        func(bundle *parcel.Bundle) error
+	ComposeStub        func(bundle *parcello.Bundle) error
 	composeMutex       sync.RWMutex
 	composeArgsForCall []struct {
-		bundle *parcel.Bundle
+		bundle *parcello.Bundle
 	}
 	composeReturns struct {
 		result1 error
@@ -20,10 +20,10 @@ type Composer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Composer) Compose(bundle *parcel.Bundle) error {
+func (fake *Composer) Compose(bundle *parcello.Bundle) error {
 	fake.composeMutex.Lock()
 	fake.composeArgsForCall = append(fake.composeArgsForCall, struct {
-		bundle *parcel.Bundle
+		bundle *parcello.Bundle
 	}{bundle})
 	fake.recordInvocation("Compose", []interface{}{bundle})
 	fake.composeMutex.Unlock()
@@ -39,7 +39,7 @@ func (fake *Composer) ComposeCallCount() int {
 	return len(fake.composeArgsForCall)
 }
 
-func (fake *Composer) ComposeArgsForCall(i int) *parcel.Bundle {
+func (fake *Composer) ComposeArgsForCall(i int) *parcello.Bundle {
 	fake.composeMutex.RLock()
 	defer fake.composeMutex.RUnlock()
 	return fake.composeArgsForCall[i].bundle
@@ -72,4 +72,4 @@ func (fake *Composer) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ parcel.Composer = new(Composer)
+var _ parcello.Composer = new(Composer)

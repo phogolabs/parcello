@@ -1,4 +1,4 @@
-package parcel_test
+package parcello_test
 
 import (
 	"fmt"
@@ -8,17 +8,17 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcello"
 )
 
 var _ = Describe("Dir", func() {
-	var dir parcel.Dir
+	var dir parcello.Dir
 
 	BeforeEach(func() {
 		path, err := ioutil.TempDir("", "gom_generator")
 		Expect(err).To(BeNil())
 
-		dir = parcel.Dir(path)
+		dir = parcello.Dir(path)
 		Expect(ioutil.WriteFile(filepath.Join(path, "sample.txt"), []byte("test"), 0600)).To(Succeed())
 	})
 
@@ -47,7 +47,7 @@ var _ = Describe("Dir", func() {
 
 		Context("when the underlying file system fails", func() {
 			It("returns an error", func() {
-				dir = parcel.Dir("/hello")
+				dir = parcello.Dir("/hello")
 				file, err := dir.OpenFile("report.txt", os.O_RDONLY, 0)
 				Expect(file).To(BeNil())
 				Expect(err).To(HaveOccurred())

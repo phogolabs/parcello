@@ -4,27 +4,27 @@ package fake
 import (
 	"sync"
 
-	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcello"
 )
 
 type Compressor struct {
-	CompressStub        func(fileSystem parcel.FileSystem) (*parcel.Bundle, error)
+	CompressStub        func(fileSystem parcello.FileSystem) (*parcello.Bundle, error)
 	compressMutex       sync.RWMutex
 	compressArgsForCall []struct {
-		fileSystem parcel.FileSystem
+		fileSystem parcello.FileSystem
 	}
 	compressReturns struct {
-		result1 *parcel.Bundle
+		result1 *parcello.Bundle
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Compressor) Compress(fileSystem parcel.FileSystem) (*parcel.Bundle, error) {
+func (fake *Compressor) Compress(fileSystem parcello.FileSystem) (*parcello.Bundle, error) {
 	fake.compressMutex.Lock()
 	fake.compressArgsForCall = append(fake.compressArgsForCall, struct {
-		fileSystem parcel.FileSystem
+		fileSystem parcello.FileSystem
 	}{fileSystem})
 	fake.recordInvocation("Compress", []interface{}{fileSystem})
 	fake.compressMutex.Unlock()
@@ -40,16 +40,16 @@ func (fake *Compressor) CompressCallCount() int {
 	return len(fake.compressArgsForCall)
 }
 
-func (fake *Compressor) CompressArgsForCall(i int) parcel.FileSystem {
+func (fake *Compressor) CompressArgsForCall(i int) parcello.FileSystem {
 	fake.compressMutex.RLock()
 	defer fake.compressMutex.RUnlock()
 	return fake.compressArgsForCall[i].fileSystem
 }
 
-func (fake *Compressor) CompressReturns(result1 *parcel.Bundle, result2 error) {
+func (fake *Compressor) CompressReturns(result1 *parcello.Bundle, result2 error) {
 	fake.CompressStub = nil
 	fake.compressReturns = struct {
-		result1 *parcel.Bundle
+		result1 *parcello.Bundle
 		result2 error
 	}{result1, result2}
 }
@@ -74,4 +74,4 @@ func (fake *Compressor) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ parcel.Compressor = new(Compressor)
+var _ parcello.Compressor = new(Compressor)

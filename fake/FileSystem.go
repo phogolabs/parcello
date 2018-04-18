@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/phogolabs/parcel"
+	"github.com/phogolabs/parcello"
 )
 
 type FileSystem struct {
@@ -29,7 +29,7 @@ type FileSystem struct {
 	walkReturns struct {
 		result1 error
 	}
-	OpenFileStub        func(name string, flag int, perm os.FileMode) (parcel.File, error)
+	OpenFileStub        func(name string, flag int, perm os.FileMode) (parcello.File, error)
 	openFileMutex       sync.RWMutex
 	openFileArgsForCall []struct {
 		name string
@@ -37,7 +37,7 @@ type FileSystem struct {
 		perm os.FileMode
 	}
 	openFileReturns struct {
-		result1 parcel.File
+		result1 parcello.File
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -110,7 +110,7 @@ func (fake *FileSystem) WalkReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FileSystem) OpenFile(name string, flag int, perm os.FileMode) (parcel.File, error) {
+func (fake *FileSystem) OpenFile(name string, flag int, perm os.FileMode) (parcello.File, error) {
 	fake.openFileMutex.Lock()
 	fake.openFileArgsForCall = append(fake.openFileArgsForCall, struct {
 		name string
@@ -137,10 +137,10 @@ func (fake *FileSystem) OpenFileArgsForCall(i int) (string, int, os.FileMode) {
 	return fake.openFileArgsForCall[i].name, fake.openFileArgsForCall[i].flag, fake.openFileArgsForCall[i].perm
 }
 
-func (fake *FileSystem) OpenFileReturns(result1 parcel.File, result2 error) {
+func (fake *FileSystem) OpenFileReturns(result1 parcello.File, result2 error) {
 	fake.OpenFileStub = nil
 	fake.openFileReturns = struct {
-		result1 parcel.File
+		result1 parcello.File
 		result2 error
 	}{result1, result2}
 }
@@ -169,4 +169,4 @@ func (fake *FileSystem) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ parcel.FileSystem = new(FileSystem)
+var _ parcello.FileSystem = new(FileSystem)

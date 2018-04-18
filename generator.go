@@ -1,4 +1,4 @@
-package parcel
+package parcello
 
 import (
 	"bufio"
@@ -40,11 +40,11 @@ func (g *Generator) Compose(bundle *Bundle) error {
 
 	fmt.Fprintln(template, "package", g.Config.Package)
 	fmt.Fprintln(template)
-	fmt.Fprintf(template, "import \"github.com/phogolabs/parcel\"")
+	fmt.Fprintf(template, "import \"github.com/phogolabs/parcello\"")
 	fmt.Fprintln(template)
 	fmt.Fprintln(template)
 	fmt.Fprintln(template, "func init() {")
-	fmt.Fprintln(template, "\tparcel.AddResource([]byte{")
+	fmt.Fprintln(template, "\tparcello.AddResource([]byte{")
 
 	template.Write(g.prepare(bundle.Body))
 
