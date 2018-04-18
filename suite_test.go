@@ -9,5 +9,5 @@ import (
 
 func TestEmbedo(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Parcel Suite")
+	RunSpecs(t, "Parcello Suite")
 }
