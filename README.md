@@ -120,18 +120,18 @@ USAGE:
    parcello [global options]
 
 VERSION:
-   0.4
+   0.6
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --quiet, -q                     Disable logging
-   --recursive, -r                 Embed the resources recursively
-   --resource-dir value, -d value  Path to directory (default: ".")
    --bundle-dir value, -b value    Path to bundle directory (default: ".")
    --ignore value, -i value        Ignore file name
    --include-docs                  Include API documentation in generated source code
+   --quiet, -q                     Disable logging
+   --recursive, -r                 Embed the resources recursively
+   --resource-dir value, -d value  Path to directory (default: ".")
    --help, -h                      show help
    --version, -v                   print the version
 ```
