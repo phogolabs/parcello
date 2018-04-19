@@ -2,7 +2,9 @@ package parcello_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"sync"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,7 +16,8 @@ var _ = Describe("Generator", func() {
 	var (
 		generator  *parcello.Generator
 		bundle     *parcello.Bundle
-		buffer     *parcello.Buffer
+		node       *parcello.Node
+		buffer     *parcello.ResourceFile
 		fileSystem *fake.FileSystem
 	)
 
@@ -64,7 +67,13 @@ var _ = Describe("Generator", func() {
 			},
 		}
 
-		buffer = parcello.NewBuffer(parcello.NewNodeFile("resource", []byte{}))
+		node = &parcello.Node{
+			Name:    "resource",
+			Content: &[]byte{},
+			Mutex:   &sync.RWMutex{},
+		}
+
+		buffer = parcello.NewResourceFile(node)
 
 		fileSystem = &fake.FileSystem{}
 		fileSystem.OpenFileReturns(buffer, nil)
@@ -86,10 +95,15 @@ var _ = Describe("Generator", func() {
 		Expect(flag).To(Equal(os.O_WRONLY | os.O_CREATE | os.O_TRUNC))
 		Expect(mode).To(Equal(os.FileMode(0600)))
 
-		Expect(buffer.String()).To(ContainSubstring("package mypackage"))
-		Expect(buffer.String()).To(ContainSubstring("func init()"))
-		Expect(buffer.String()).To(ContainSubstring("parcello.AddResource"))
-		Expect(buffer.String()).NotTo(ContainSubstring("// Auto-generated"))
+		_, err := buffer.Seek(0, os.SEEK_SET)
+		Expect(err).To(BeNil())
+		content, err := ioutil.ReadAll(buffer)
+		Expect(err).To(BeNil())
+
+		Expect(content).To(ContainSubstring("package mypackage"))
+		Expect(content).To(ContainSubstring("func init()"))
+		Expect(content).To(ContainSubstring("parcello.AddResource"))
+		Expect(content).NotTo(ContainSubstring("// Auto-generated"))
 	})
 
 	Context("when include API documentation is enabled", func() {
@@ -99,10 +113,16 @@ var _ = Describe("Generator", func() {
 
 		It("includes the documentation", func() {
 			Expect(generator.Compose(bundle)).To(Succeed())
-			Expect(buffer.String()).To(ContainSubstring("package mypackage"))
-			Expect(buffer.String()).To(ContainSubstring("func init()"))
-			Expect(buffer.String()).To(ContainSubstring("parcello.AddResource"))
-			Expect(buffer.String()).To(ContainSubstring("// Auto-generated"))
+
+			_, err := buffer.Seek(0, os.SEEK_SET)
+			Expect(err).To(BeNil())
+			content, err := ioutil.ReadAll(buffer)
+			Expect(err).To(BeNil())
+
+			Expect(content).To(ContainSubstring("package mypackage"))
+			Expect(content).To(ContainSubstring("func init()"))
+			Expect(content).To(ContainSubstring("parcello.AddResource"))
+			Expect(content).To(ContainSubstring("// Auto-generated"))
 		})
 	})
 

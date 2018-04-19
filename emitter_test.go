@@ -2,6 +2,7 @@ package parcello_test
 
 import (
 	"fmt"
+	"sync"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,12 +16,19 @@ var _ = Describe("Emitter", func() {
 		composer   *fake.Composer
 		compressor *fake.Compressor
 		fileSystem *fake.FileSystem
-		resource   *parcello.Buffer
+		resource   *parcello.ResourceFile
 		bundle     *parcello.Bundle
 	)
 
 	BeforeEach(func() {
-		resource = parcello.NewBuffer(parcello.NewNodeFile("resource", []byte("data")))
+		data := []byte("data")
+		node := &parcello.Node{
+			Name:    "resource",
+			Content: &data,
+			Mutex:   &sync.RWMutex{},
+		}
+
+		resource = parcello.NewResourceFile(node)
 
 		bundle = &parcello.Bundle{
 			Name:   "resource",

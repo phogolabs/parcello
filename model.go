@@ -1,13 +1,15 @@
 package parcello
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
+
+	"github.com/blang/vfs/memfs"
 )
 
 //go:generate counterfeiter -fake-name FileSystem -o ./fake/FileSystem.go . FileSystem
@@ -25,6 +27,9 @@ type FileSystem interface {
 	// OpenFile is the generalized open call; most users will use Open
 	OpenFile(name string, flag int, perm os.FileMode) (File, error)
 }
+
+// Binary represents a resource blob content
+type Binary = []byte
 
 // ReadOnlyFile is the bundle file
 type ReadOnlyFile = http.File
@@ -59,122 +64,97 @@ type Bundle struct {
 	Body []byte
 }
 
-// Binary represents a resource blob content
-type Binary = []byte
-
-// Node represents a hierarchy node in the resource manager
+// Node represents a node in resource tree
 type Node struct {
-	name     string
-	dir      bool
-	content  Binary
-	children []*Node
+	// Name of the node
+	Name string
+	// IsDir returns true if the node is directory
+	IsDir bool
+	// Mutext keeps the node thread safe
+	Mutex *sync.RWMutex
+	// ModTime returns the last modified time
+	ModTime time.Time
+	// Content of the node
+	Content *Binary
+	// Children of the node
+	Children []*Node
 }
 
-// NewNodeDir creates a new directory node
-func NewNodeDir(name string, children ...*Node) *Node {
-	return &Node{
-		name:     name,
-		dir:      true,
-		children: children,
-	}
-}
+var _ os.FileInfo = &ResourceFileInfo{}
 
-// NewNodeFile creates a new file node
-func NewNodeFile(name string, content Binary) *Node {
-	return &Node{
-		name:    name,
-		dir:     false,
-		content: content,
-	}
+// ResourceFileInfo represents a hierarchy node in the resource manager
+type ResourceFileInfo struct {
+	Node *Node
 }
 
 // Name returns the base name of the file
-func (n *Node) Name() string {
-	return n.name
+func (n *ResourceFileInfo) Name() string {
+	return n.Node.Name
 }
 
 // Size returns the length in bytes for regular files
-func (n *Node) Size() int64 {
-	return int64(len(n.content))
+func (n *ResourceFileInfo) Size() int64 {
+	if n.Node.IsDir {
+		return 0
+	}
+
+	n.Node.Mutex.RLock()
+	defer n.Node.Mutex.RUnlock()
+	l := len(*(n.Node.Content))
+	return int64(l)
 }
 
 // Mode returns the file mode bits
-func (n *Node) Mode() os.FileMode {
+func (n *ResourceFileInfo) Mode() os.FileMode {
 	return 0
 }
 
 // ModTime returns the modification time
-func (n *Node) ModTime() time.Time {
-	return time.Now()
+func (n *ResourceFileInfo) ModTime() time.Time {
+	return n.Node.ModTime
 }
 
 // IsDir returns true if the node is directory
-func (n *Node) IsDir() bool {
-	return n.dir
+func (n *ResourceFileInfo) IsDir() bool {
+	return n.Node.IsDir
 }
 
 // Sys returns the underlying data source
-func (n *Node) Sys() interface{} {
+func (n *ResourceFileInfo) Sys() interface{} {
 	return nil
 }
 
-var _ File = &Buffer{}
+var _ File = &ResourceFile{}
 
-// Buffer represents a *bytes.Buffer that can be closed
-type Buffer struct {
-	node   *Node
-	buffer *bytes.Buffer
+// ResourceFile represents a *bytes.Buffer that can be closed
+type ResourceFile struct {
+	*memfs.MemFile
+	node *Node
 }
 
-// NewBuffer creates a new Buffer
-func NewBuffer(node *Node) *Buffer {
-	return &Buffer{
-		node:   node,
-		buffer: bytes.NewBuffer(node.content),
+// NewResourceFile creates a new Buffer
+func NewResourceFile(node *Node) *ResourceFile {
+	return &ResourceFile{
+		MemFile: memfs.NewMemFile(node.Name, node.Mutex, node.Content),
+		node:    node,
 	}
-}
-
-// Read reads the next len(p) bytes from the buffer or until the buffer is drainged
-func (b *Buffer) Read(p []byte) (int, error) {
-	return b.buffer.Read(p)
-}
-
-// Write appends the contents of p to the buffer, growing the buffer as needed.
-func (b *Buffer) Write(p []byte) (int, error) {
-	return b.buffer.Write(p)
-}
-
-// Close closes the buffer (noop).
-func (b *Buffer) Close() error {
-	return nil
-}
-
-// String returns the contents of the unread portion of the buffer
-func (b *Buffer) String() string {
-	return b.buffer.String()
-}
-
-// Seek sets the offset for the next Read or Write to offset,
-// interpreted according to whence. (noop).
-func (b *Buffer) Seek(offset int64, whence int) (int64, error) {
-	return 0, nil
 }
 
 // Readdir reads the contents of the directory associated with file and
 // returns a slice of up to n FileInfo values, as would be returned
-func (b *Buffer) Readdir(n int) ([]os.FileInfo, error) {
+func (b *ResourceFile) Readdir(n int) ([]os.FileInfo, error) {
 	info := []os.FileInfo{}
 
-	if !b.node.IsDir() {
+	if !b.node.IsDir {
 		return info, fmt.Errorf("Not supported")
 	}
 
-	for index, node := range b.node.children {
+	for index, node := range b.node.Children {
 		if index >= n && n > 0 {
 			break
 		}
 
-		info = append(info, node)
+		info = append(info, &ResourceFileInfo{Node: node})
 	}
 
 	return info, nil
@@ -182,6 +162,6 @@ func (b *Buffer) Readdir(n int) ([]os.FileInfo, error) {
 
 // Stat returns the FileInfo structure describing file.
 // If there is an error, it will be of type *PathError.
-func (b *Buffer) Stat() (os.FileInfo, error) {
-	return b.node, nil
+func (b *ResourceFile) Stat() (os.FileInfo, error) {
+	return &ResourceFileInfo{Node: b.node}, nil
 }

@@ -27,7 +27,7 @@ func (m *Manager) Add(binary Binary) error {
 	defer m.rw.Unlock()
 
 	if m.root == nil {
-		m.root = &Node{name: "/", dir: true}
+		m.root = &Node{Name: "/", IsDir: true}
 	}
 
 	gzipper, err := gzip.NewReader(bytes.NewBuffer(binary))
@@ -57,15 +57,16 @@ func (m *Manager) uncompress(reader *tar.Reader) error {
 			return fmt.Errorf("Invalid path: '%s'", header.Name)
 		}
 
-		node.dir = false
-		node.content, _ = ioutil.ReadAll(reader)
+		content, _ := ioutil.ReadAll(reader)
+		node.IsDir = false
+		node.Content = &content
 	}
 }
 
 // Root returns a sub-manager for given path
 func (m *Manager) Root(name string) (*Manager, error) {
 	if node := find(split(name), m.root); node != nil {
-		if node.dir {
+		if node.IsDir {
 			return &Manager{root: node}, nil
 		}
 	}
@@ -81,7 +82,7 @@ func (m *Manager) Open(name string) (ReadOnlyFile, error) {
 // OpenFile is the generalized open call; most users will use Open
 func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	if node := find(split(name), m.root); node != nil {
-		return NewBuffer(node), nil
+		return NewResourceFile(node), nil
 	}
 
 	return nil, fmt.Errorf("File '%s' not found", name)
@@ -98,7 +99,7 @@ func (m *Manager) Walk(dir string, fn filepath.WalkFunc) error {
 }
 
 func add(path []string, node *Node) *Node {
-	if !node.dir || len(node.content) > 0 {
+	if !node.IsDir || node.Content != nil {
 		return nil
 	}
 
@@ -108,18 +109,19 @@ func add(path []string, node *Node) *Node {
 
 	name := path[0]
 
-	for _, child := range node.children {
-		if child.name == name {
+	for _, child := range node.Children {
+		if child.Name == name {
 			return add(path[1:], child)
 		}
 	}
 
 	child := &Node{
-		name: name,
-		dir:  true,
+		Mutex: &sync.RWMutex{},
+		Name:  name,
+		IsDir: true,
 	}
 
-	node.children = append(node.children, child)
+	node.Children = append(node.Children, child)
 	return add(path[1:], child)
 }
 
@@ -140,8 +142,8 @@ func find(path []string, node *Node) *Node {
 		return node
 	}
 
-	for _, child := range node.children {
-		if path[0] == child.name {
+	for _, child := range node.Children {
+		if path[0] == child.Name {
 			if len(path) == 1 {
 				return child
 			}
@@ -153,12 +155,12 @@ func find(path []string, node *Node) *Node {
 }
 
 func walk(path string, node *Node, fn filepath.WalkFunc) error {
-	if err := fn(path, node, nil); err != nil {
+	if err := fn(path, &ResourceFileInfo{Node: node}, nil); err != nil {
 		return err
 	}
 
-	for _, child := range node.children {
-		if err := walk(filepath.Join(path, child.name), child, fn); err != nil {
+	for _, child := range node.Children {
+		if err := walk(filepath.Join(path, child.Name), child, fn); err != nil {
 			return err
 		}
 	}
