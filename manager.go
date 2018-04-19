@@ -92,66 +92,37 @@ func (m *Manager) Open(name string) (ReadOnlyFile, error) {
 
 // OpenFile is the generalized open call; most users will use Open
 func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
-	path := split(name)
-	parent, node := find(path, nil, m.root)
-	if parent == nil {
-		return nil, fmt.Errorf("Directory does not exist")
+	parent, node, err := m.open(name, flag)
+	if err != nil {
+		return nil, err
+	}
+
+	if isWritable(flag) && node != nil && node.IsDir {
+		return nil, &os.PathError{Op: "open", Path: name, Err: ErrIsDirectory}
 	}
 
 	if hasFlag(os.O_CREATE, flag) {
-		if node != nil {
-			if !hasFlag(os.O_TRUNC, flag) {
-				return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrExist}
-			}
+		if node != nil && !hasFlag(os.O_TRUNC, flag) {
+			return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrExist}
 		}
 
-		base := path[len(path)-1]
-		node = &Node{
-			Name:    base,
-			IsDir:   false,
-			ModTime: time.Now(),
-		}
-
-		parent.Children = append(parent.Children, node)
-	} else {
-		if node == nil {
-			return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrNotExist}
-		}
-		if node.IsDir {
-			return nil, &os.PathError{Op: "open", Path: name, Err: ErrIsDirectory}
-		}
+		node = createNode(filepath.Base(name), parent, node)
 	}
 
-	if hasFlag(os.O_WRONLY, flag) ||
-		hasFlag(os.O_RDWR, flag) ||
-		hasFlag(os.O_APPEND, flag) {
-		node.ModTime = time.Now()
+	if node == nil {
+		return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrNotExist}
 	}
 
 	return createResourceFile(node, flag)
 }
 
-func createResourceFile(node *Node, flag int) (File, error) {
-	if node.Content == nil || hasFlag(os.O_TRUNC, flag) {
-		buf := make([]byte, 0)
-		node.Content = &buf
-		node.Mutex = &sync.RWMutex{}
+func (m *Manager) open(name string, flag int) (*Node, *Node, error) {
+	parent, node := find(split(name), nil, m.root)
+	if node != m.root && parent == nil {
+		return nil, nil, fmt.Errorf("Directory does not exist")
 	}
 
-	f := NewResourceFile(node)
-
-	if hasFlag(os.O_APPEND, flag) {
-		_, _ = f.Seek(0, os.SEEK_END)
-	}
-
-	if hasFlag(os.O_RDWR, flag) {
-		return f, nil
-	}
-	if hasFlag(os.O_WRONLY, flag) {
-		return &woFile{f}, nil
-	}
-
-	return &roFile{f}, nil
+	return parent, node, nil
 }
 
 // Walk walks the file tree rooted at root, calling walkFn for each file or
@@ -235,8 +206,50 @@ func walk(path string, node *Node, fn filepath.WalkFunc) error {
 	return nil
 }
 
+func createNode(name string, parent, node *Node) *Node {
+	node = &Node{
+		Name:    name,
+		IsDir:   false,
+		ModTime: time.Now(),
+	}
+
+	parent.Children = append(parent.Children, node)
+	return node
+}
+
+func createResourceFile(node *Node, flag int) (File, error) {
+	if isWritable(flag) {
+		node.ModTime = time.Now()
+	}
+
+	if node.Content == nil || hasFlag(os.O_TRUNC, flag) {
+		buf := make([]byte, 0)
+		node.Content = &buf
+		node.Mutex = &sync.RWMutex{}
+	}
+
+	f := NewResourceFile(node)
+
+	if hasFlag(os.O_APPEND, flag) {
+		_, _ = f.Seek(0, os.SEEK_END)
+	}
+
+	if hasFlag(os.O_RDWR, flag) {
+		return f, nil
+	}
+	if hasFlag(os.O_WRONLY, flag) {
+		return &woFile{f}, nil
+	}
+
+	return &roFile{f}, nil
+}
+
 func hasFlag(flag int, flags int) bool {
 	return flags&flag == flag
+}
+
+func isWritable(flag int) bool {
+	return hasFlag(os.O_WRONLY, flag) || hasFlag(os.O_RDWR, flag) || hasFlag(os.O_APPEND, flag)
 }
 
 type roFile struct {

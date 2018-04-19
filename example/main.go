@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	file, err := parcello.Open("message.txt")
+	file, err := parcello.Open("document/message.txt")
 	if err != nil {
 		panic(err)
 	}

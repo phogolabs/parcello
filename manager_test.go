@@ -103,6 +103,12 @@ var _ = Describe("Manager", func() {
 	})
 
 	Describe("Open", func() {
+		It("opens the root successfully", func() {
+			file, err := manager.Open("/")
+			Expect(file).NotTo(BeNil())
+			Expect(err).To(BeNil())
+		})
+
 		Context("when the resource is empty", func() {
 			It("returns an error", func() {
 				file, err := manager.Open("/migration.sql")
@@ -114,8 +120,8 @@ var _ = Describe("Manager", func() {
 		Context("when the file is directory", func() {
 			It("returns an error", func() {
 				file, err := manager.Open("/resource/reports")
-				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("open /resource/reports: Is directory"))
+				Expect(file).NotTo(BeNil())
+				Expect(err).To(BeNil())
 			})
 		})
 
@@ -181,6 +187,14 @@ var _ = Describe("Manager", func() {
 				file, err := manager.OpenFile("/resource/secrets.txt", os.O_CREATE, 0600)
 				Expect(file).NotTo(BeNil())
 				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Context("when the file is directory", func() {
+			It("returns an error", func() {
+				file, err := manager.OpenFile("/resource/reports", os.O_RDWR, 0600)
+				Expect(file).To(BeNil())
+				Expect(err).To(MatchError("open /resource/reports: Is directory"))
 			})
 		})
 
