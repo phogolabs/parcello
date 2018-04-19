@@ -119,7 +119,7 @@ func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error
 func (m *Manager) open(name string, flag int) (*Node, *Node, error) {
 	parent, node := find(split(name), nil, m.root)
 	if node != m.root && parent == nil {
-		return nil, nil, fmt.Errorf("Directory does not exist")
+		return nil, nil, &os.PathError{Op: "open", Path: name, Err: os.ErrNotExist}
 	}
 
 	return parent, node, nil

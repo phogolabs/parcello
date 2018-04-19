@@ -113,7 +113,7 @@ var _ = Describe("Manager", func() {
 			It("returns an error", func() {
 				file, err := manager.Open("/migration.sql")
 				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("Directory does not exist"))
+				Expect(err).To(MatchError("open /migration.sql: file does not exist"))
 			})
 		})
 
@@ -129,7 +129,7 @@ var _ = Describe("Manager", func() {
 			It("returns an error", func() {
 				file, err := parcello.Open("migration.sql")
 				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("Directory does not exist"))
+				Expect(err).To(MatchError("open migration.sql: file does not exist"))
 			})
 		})
 
