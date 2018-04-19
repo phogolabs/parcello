@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,6 +12,16 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
+)
+
+var (
+	// ErrReadOnly is returned if the file is read-only and write operations are disabled.
+	ErrReadOnly = errors.New("File is read-only")
+	// ErrWriteOnly is returned if the file is write-only and read operations are disabled.
+	ErrWriteOnly = errors.New("File is write-only")
+	// ErrIsDirectory is returned if the file under operation is not a regular file but a directory.
+	ErrIsDirectory = errors.New("Is directory")
 )
 
 var _ FileSystem = &Manager{}
@@ -65,7 +76,7 @@ func (m *Manager) uncompress(reader *tar.Reader) error {
 
 // Root returns a sub-manager for given path
 func (m *Manager) Root(name string) (*Manager, error) {
-	if node := find(split(name), m.root); node != nil {
+	if _, node := find(split(name), nil, m.root); node != nil {
 		if node.IsDir {
 			return &Manager{root: node}, nil
 		}
@@ -76,22 +87,77 @@ func (m *Manager) Root(name string) (*Manager, error) {
 
 // Open opens an embedded resource for read
 func (m *Manager) Open(name string) (ReadOnlyFile, error) {
-	return m.OpenFile(name, 0, 0)
+	return m.OpenFile(name, os.O_RDONLY, 0)
 }
 
 // OpenFile is the generalized open call; most users will use Open
 func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
-	if node := find(split(name), m.root); node != nil {
-		return NewResourceFile(node), nil
+	path := split(name)
+	parent, node := find(path, nil, m.root)
+	if parent == nil {
+		return nil, fmt.Errorf("Directory does not exist")
 	}
 
-	return nil, fmt.Errorf("File '%s' not found", name)
+	if hasFlag(os.O_CREATE, flag) {
+		if node != nil {
+			if !hasFlag(os.O_TRUNC, flag) {
+				return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrExist}
+			}
+		}
+
+		base := path[len(path)-1]
+		node = &Node{
+			Name:    base,
+			IsDir:   false,
+			ModTime: time.Now(),
+		}
+
+		parent.Children = append(parent.Children, node)
+	} else {
+		if node == nil {
+			return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrNotExist}
+		}
+		if node.IsDir {
+			return nil, &os.PathError{Op: "open", Path: name, Err: ErrIsDirectory}
+		}
+	}
+
+	if hasFlag(os.O_WRONLY, flag) ||
+		hasFlag(os.O_RDWR, flag) ||
+		hasFlag(os.O_APPEND, flag) {
+		node.ModTime = time.Now()
+	}
+
+	return createResourceFile(node, flag)
+}
+
+func createResourceFile(node *Node, flag int) (File, error) {
+	if node.Content == nil || hasFlag(os.O_TRUNC, flag) {
+		buf := make([]byte, 0)
+		node.Content = &buf
+		node.Mutex = &sync.RWMutex{}
+	}
+
+	f := NewResourceFile(node)
+
+	if hasFlag(os.O_APPEND, flag) {
+		_, _ = f.Seek(0, os.SEEK_END)
+	}
+
+	if hasFlag(os.O_RDWR, flag) {
+		return f, nil
+	}
+	if hasFlag(os.O_WRONLY, flag) {
+		return &woFile{f}, nil
+	}
+
+	return &roFile{f}, nil
 }
 
 // Walk walks the file tree rooted at root, calling walkFn for each file or
 // directory in the tree, including root.
 func (m *Manager) Walk(dir string, fn filepath.WalkFunc) error {
-	if node := find(split(dir), m.root); node != nil {
+	if _, node := find(split(dir), nil, m.root); node != nil {
 		return walk(dir, node, fn)
 	}
 
@@ -116,9 +182,10 @@ func add(path []string, node *Node) *Node {
 	}
 
 	child := &Node{
-		Mutex: &sync.RWMutex{},
-		Name:  name,
-		IsDir: true,
+		Mutex:   &sync.RWMutex{},
+		Name:    name,
+		IsDir:   true,
+		ModTime: time.Now(),
 	}
 
 	node.Children = append(node.Children, child)
@@ -137,21 +204,21 @@ func split(path string) []string {
 	return parts
 }
 
-func find(path []string, node *Node) *Node {
-	if len(path) == 0 {
-		return node
+func find(path []string, parent, node *Node) (*Node, *Node) {
+	if len(path) == 0 || node == nil {
+		return parent, node
 	}
 
 	for _, child := range node.Children {
 		if path[0] == child.Name {
 			if len(path) == 1 {
-				return child
+				return node, child
 			}
-			return find(path[1:], child)
+			return find(path[1:], node, child)
 		}
 	}
 
-	return nil
+	return parent, nil
 }
 
 func walk(path string, node *Node, fn filepath.WalkFunc) error {
@@ -166,4 +233,27 @@ func walk(path string, node *Node, fn filepath.WalkFunc) error {
 	}
 
 	return nil
+}
+
+func hasFlag(flag int, flags int) bool {
+	return flags&flag == flag
+}
+
+type roFile struct {
+	*ResourceFile
+}
+
+// Write is disabled and returns ErrorReadOnly
+func (f *roFile) Write(p []byte) (n int, err error) {
+	return 0, ErrReadOnly
+}
+
+// woFile wraps the given file and disables Read(..) operation.
+type woFile struct {
+	*ResourceFile
+}
+
+// Read is disabled and returns ErrorWroteOnly
+func (f *woFile) Read(p []byte) (n int, err error) {
+	return 0, ErrWriteOnly
 }

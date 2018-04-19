@@ -2,8 +2,10 @@ package parcello_test
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -103,9 +105,17 @@ var _ = Describe("Manager", func() {
 	Describe("Open", func() {
 		Context("when the resource is empty", func() {
 			It("returns an error", func() {
-				file, err := manager.Open("migration.sql")
+				file, err := manager.Open("/migration.sql")
 				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("File 'migration.sql' not found"))
+				Expect(err).To(MatchError("Directory does not exist"))
+			})
+		})
+
+		Context("when the file is directory", func() {
+			It("returns an error", func() {
+				file, err := manager.Open("/resource/reports")
+				Expect(file).To(BeNil())
+				Expect(err).To(MatchError("open /resource/reports: Is directory"))
 			})
 		})
 
@@ -113,7 +123,7 @@ var _ = Describe("Manager", func() {
 			It("returns an error", func() {
 				file, err := parcello.Open("migration.sql")
 				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("File 'migration.sql' not found"))
+				Expect(err).To(MatchError("Directory does not exist"))
 			})
 		})
 
@@ -127,19 +137,117 @@ var _ = Describe("Manager", func() {
 			Expect(string(data)).To(Equal("Report 2018\n"))
 		})
 
-		Context("when is trying to open a directory", func() {
-			It("returns an error", func() {
-				file, err := manager.Open("/resource/reports/")
+		Context("when the file is open more than once for read", func() {
+			It("does not change the mod time", func() {
+				file, err := manager.Open("/resource/reports/2018.txt")
 				Expect(file).NotTo(BeNil())
-				Expect(err).To(BeNil())
+				Expect(err).NotTo(HaveOccurred())
+
+				info, err := file.Stat()
+				Expect(err).NotTo(HaveOccurred())
+
+				file, err = manager.Open("/resource/reports/2018.txt")
+				Expect(file).NotTo(BeNil())
+				Expect(err).NotTo(HaveOccurred())
+
+				info2, err := file.Stat()
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(info.ModTime()).To(Equal(info2.ModTime()))
 			})
+		})
+
+		It("returns a readonly resource", func() {
+			file, err := manager.Open("/resource/reports/2018.txt")
+			Expect(file).NotTo(BeNil())
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = fmt.Fprintln(file.(io.Writer), "hello")
+			Expect(err).To(MatchError("File is read-only"))
 		})
 
 		Context("when the file with the requested name does not exist", func() {
 			It("returns an error", func() {
-				file, err := manager.Open("/home/root/migration.sql")
+				file, err := manager.Open("/resource/migration.sql")
 				Expect(file).To(BeNil())
-				Expect(err).To(MatchError("File '/home/root/migration.sql' not found"))
+				Expect(err).To(MatchError("open /resource/migration.sql: file does not exist"))
+			})
+		})
+	})
+
+	Describe("OpenFile", func() {
+		Context("when the file does not exist", func() {
+			It("creates the file", func() {
+				file, err := manager.OpenFile("/resource/secrets.txt", os.O_CREATE, 0600)
+				Expect(file).NotTo(BeNil())
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Context("when the file exists", func() {
+			It("truncs the file content", func() {
+				file, err := manager.OpenFile("/resource/reports/2018.txt", os.O_CREATE|os.O_TRUNC, 0600)
+				Expect(file).NotTo(BeNil())
+				Expect(err).NotTo(HaveOccurred())
+
+				data, err := ioutil.ReadAll(file)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(data).To(BeEmpty())
+			})
+
+			Context("when the file is open more than once for write", func() {
+				It("does not change the mod time", func() {
+					start := time.Now()
+
+					file, err := manager.OpenFile("/resource/reports/2018.txt", os.O_WRONLY, 0600)
+					Expect(file).NotTo(BeNil())
+					Expect(err).NotTo(HaveOccurred())
+
+					info, err := file.Stat()
+					Expect(err).NotTo(HaveOccurred())
+					modTime := info.ModTime()
+
+					Expect(modTime.After(start)).To(BeTrue())
+				})
+			})
+
+			Context("when the os.O_TRUNC flag is not provided", func() {
+				It("returns an error", func() {
+					file, err := manager.OpenFile("/resource/reports/2018.txt", os.O_CREATE, 0600)
+					Expect(file).To(BeNil())
+					Expect(err).To(MatchError("open /resource/reports/2018.txt: file already exists"))
+				})
+			})
+
+			Context("when the file is open for append", func() {
+				It("appends content successfully", func() {
+					file, err := manager.OpenFile("/resource/reports/2018.txt", os.O_RDWR|os.O_APPEND, 0600)
+					Expect(file).NotTo(BeNil())
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = fmt.Fprint(file, "hello")
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = file.Seek(0, os.SEEK_SET)
+					Expect(err).NotTo(HaveOccurred())
+
+					data, err := ioutil.ReadAll(file)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(string(data)).To(Equal("Report 2018\nhello"))
+				})
+			})
+
+			Context("when the file is open for WRITE only", func() {
+				Context("when we try to read", func() {
+					It("returns an error", func() {
+						file, err := manager.OpenFile("/resource/reports/2018.txt", os.O_WRONLY, 0600)
+						Expect(file).NotTo(BeNil())
+						Expect(err).NotTo(HaveOccurred())
+
+						_, err = ioutil.ReadAll(file)
+						Expect(err).To(MatchError("File is write-only"))
+					})
+				})
 			})
 		})
 	})
