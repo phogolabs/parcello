@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/phogolabs/parcello"
 	"github.com/urfave/cli"
@@ -57,6 +58,9 @@ func main() {
 			},
 		},
 	}
+
+	sort.Sort(cli.FlagsByName(app.Flags))
+	sort.Sort(cli.CommandsByName(app.Commands))
 
 	app.Run(os.Args)
 }
