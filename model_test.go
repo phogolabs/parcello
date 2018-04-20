@@ -2,8 +2,8 @@ package parcello_test
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
-	"os"
 	"sync"
 	"time"
 
@@ -78,12 +78,12 @@ var _ = Describe("Model", func() {
 
 				file = parcello.NewResourceFile(node)
 
-				_, err := file.Seek(int64(len(data)), os.SEEK_SET)
+				_, err := file.Seek(int64(len(data)), io.SeekStart)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
 			It("reads successfully", func() {
-				_, err := file.Seek(0, os.SEEK_SET)
+				_, err := file.Seek(0, io.SeekStart)
 				Expect(err).NotTo(HaveOccurred())
 
 				data, err := ioutil.ReadAll(file)
@@ -94,7 +94,7 @@ var _ = Describe("Model", func() {
 			It("writes successfully", func() {
 				fmt.Fprintf(file, ",jack")
 
-				_, err := file.Seek(0, os.SEEK_SET)
+				_, err := file.Seek(0, io.SeekStart)
 				Expect(err).NotTo(HaveOccurred())
 
 				data, err := ioutil.ReadAll(file)

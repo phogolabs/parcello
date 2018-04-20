@@ -92,7 +92,7 @@ func (m *Manager) Open(name string) (ReadOnlyFile, error) {
 
 // OpenFile is the generalized open call; most users will use Open
 func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
-	parent, node, err := m.open(name, flag)
+	parent, node, err := m.open(name)
 	if err != nil {
 		return nil, err
 	}
@@ -106,17 +106,17 @@ func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error
 			return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrExist}
 		}
 
-		node = createNode(filepath.Base(name), parent, node)
+		node = newNode(filepath.Base(name), parent)
 	}
 
 	if node == nil {
 		return nil, &os.PathError{Op: "open", Path: name, Err: os.ErrNotExist}
 	}
 
-	return createResourceFile(node, flag)
+	return newFile(node, flag)
 }
 
-func (m *Manager) open(name string, flag int) (*Node, *Node, error) {
+func (m *Manager) open(name string) (*Node, *Node, error) {
 	parent, node := find(split(name), nil, m.root)
 	if node != m.root && parent == nil {
 		return nil, nil, &os.PathError{Op: "open", Path: name, Err: os.ErrNotExist}
@@ -206,8 +206,8 @@ func walk(path string, node *Node, fn filepath.WalkFunc) error {
 	return nil
 }
 
-func createNode(name string, parent, node *Node) *Node {
-	node = &Node{
+func newNode(name string, parent *Node) *Node {
+	node := &Node{
 		Name:    name,
 		IsDir:   false,
 		ModTime: time.Now(),
@@ -217,7 +217,7 @@ func createNode(name string, parent, node *Node) *Node {
 	return node
 }
 
-func createResourceFile(node *Node, flag int) (File, error) {
+func newFile(node *Node, flag int) (File, error) {
 	if isWritable(flag) {
 		node.ModTime = time.Now()
 	}
@@ -231,7 +231,7 @@ func createResourceFile(node *Node, flag int) (File, error) {
 	f := NewResourceFile(node)
 
 	if hasFlag(os.O_APPEND, flag) {
-		_, _ = f.Seek(0, os.SEEK_END)
+		_, _ = f.Seek(0, io.SeekEnd)
 	}
 
 	if hasFlag(os.O_RDWR, flag) {

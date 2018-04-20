@@ -2,6 +2,7 @@ package parcello_test
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -95,7 +96,7 @@ var _ = Describe("Generator", func() {
 		Expect(flag).To(Equal(os.O_WRONLY | os.O_CREATE | os.O_TRUNC))
 		Expect(mode).To(Equal(os.FileMode(0600)))
 
-		_, err := buffer.Seek(0, os.SEEK_SET)
+		_, err := buffer.Seek(0, io.SeekStart)
 		Expect(err).To(BeNil())
 		content, err := ioutil.ReadAll(buffer)
 		Expect(err).To(BeNil())
@@ -114,7 +115,7 @@ var _ = Describe("Generator", func() {
 		It("includes the documentation", func() {
 			Expect(generator.Compose(bundle)).To(Succeed())
 
-			_, err := buffer.Seek(0, os.SEEK_SET)
+			_, err := buffer.Seek(0, io.SeekStart)
 			Expect(err).To(BeNil())
 			content, err := ioutil.ReadAll(buffer)
 			Expect(err).To(BeNil())

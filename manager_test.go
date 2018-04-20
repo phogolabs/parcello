@@ -242,7 +242,7 @@ var _ = Describe("Manager", func() {
 					_, err = fmt.Fprint(file, "hello")
 					Expect(err).NotTo(HaveOccurred())
 
-					_, err = file.Seek(0, os.SEEK_SET)
+					_, err = file.Seek(0, io.SeekStart)
 					Expect(err).NotTo(HaveOccurred())
 
 					data, err := ioutil.ReadAll(file)
