@@ -22,7 +22,7 @@ Note that we may introduce breaking changes until we reach v1.0.
 
 - [x] Rename the tool in order not to clash with [parcel-bundler](https://github.com/parcel-bundler/parcel)
 - [x] Support [http.FileSystem](https://golang.org/pkg/net/http/#FileSystem)
-- [ ] Support embedded COFF resources
+- [ ] ~~Support embedded COFF resources~~ (postponed until we accomplish a spike that works on all platforms)
 
 ## Installation
 
