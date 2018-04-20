@@ -12,7 +12,7 @@
 
 ## Overview
 
-Parcel is a simple resource manager for Golang that allows embedding assets
+Parcello is a simple resource manager for Golang that allows embedding assets
 like SQL, bash scripts and images. That allows easy release management by
 deploying just a single binary rather than many files.
 
