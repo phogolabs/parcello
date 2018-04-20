@@ -5,5 +5,5 @@ Please explain the changes you made here.
 - [ ] Code compiles correctly
 - [ ] Created tests which fail without the change (if possible)
 - [ ] All tests passing
-- [ ] Extended the README / documentation, if necessary
-- [ ] Added myself / the copyright holder to the AUTHORS file
+- [ ] Extended the README.md / documentation, if necessary
+- [ ] Added myself / the copyright holder to the CONTRIBUTORS file
