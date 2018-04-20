@@ -120,7 +120,7 @@ USAGE:
    parcello [global options]
 
 VERSION:
-   0.6
+   0.7
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
