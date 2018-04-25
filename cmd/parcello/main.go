@@ -10,16 +10,16 @@ import (
 )
 
 func main() {
-	generator := &cmd.ResourceGenerator{}
+	embedder := &cmd.ResourceEmbedder{}
 
 	commands := []cli.Command{
-		generator.CreateCommand(),
+		embedder.CreateCommand(),
 	}
 
 	app := &cli.App{
 		Name:                 "parcello",
 		HelpName:             "parcello",
-		Usage:                "Golang Resource Bundler",
+		Usage:                "Golang Resource Bundler and Embedder",
 		UsageText:            "parcello [global options]",
 		Version:              "0.7",
 		BashComplete:         cli.DefaultAppComplete,

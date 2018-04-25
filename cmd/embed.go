@@ -7,17 +7,17 @@ import (
 	"github.com/urfave/cli"
 )
 
-// ResourceGenerator is a command that generate compilable resources
-type ResourceGenerator struct {
+// ResourceEmbedder is a command that generate compilable resources
+type ResourceEmbedder struct {
 	emitter *parcello.Emitter
 }
 
 // CreateCommand creates a cli.Command that can be used by cli.App.
-func (r *ResourceGenerator) CreateCommand() cli.Command {
+func (r *ResourceEmbedder) CreateCommand() cli.Command {
 	return cli.Command{
-		Name:         "generate",
-		Usage:        "A command for generating compilable resources",
-		Description:  "A command for generating compilable resources",
+		Name:         "embed",
+		Usage:        "Command for generating compilable resources",
+		Description:  "Command for generating compilable resources",
 		BashComplete: cli.DefaultAppComplete,
 		Before:       r.before,
 		Action:       r.generate,
@@ -30,7 +30,7 @@ func (r *ResourceGenerator) CreateCommand() cli.Command {
 	}
 }
 
-func (r *ResourceGenerator) before(ctx *cli.Context) error {
+func (r *ResourceEmbedder) before(ctx *cli.Context) error {
 	resourceDir, err := filepath.Abs(ctx.GlobalString("resource-dir"))
 	if err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
@@ -66,7 +66,7 @@ func (r *ResourceGenerator) before(ctx *cli.Context) error {
 	return nil
 }
 
-func (r *ResourceGenerator) generate(ctx *cli.Context) error {
+func (r *ResourceEmbedder) generate(ctx *cli.Context) error {
 	if err := r.emitter.Emit(); err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}

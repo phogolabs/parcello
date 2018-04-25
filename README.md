@@ -46,7 +46,7 @@ You can use the parcello command line interface to bundle the desired resources
 recursively:
 
 ```console
-$ parcello -r -d <resource_dir_source> -b <bundle_dir_destination> generate
+$ parcello -r -d <resource_dir_source> -b <bundle_dir_destination> embed
 ```
 
 However, the best way to use the tool is via `go generate`. In order to embed all
@@ -57,7 +57,7 @@ following comment:
 // Package database contains the database artefacts of GOM as embedded resource
 package database
 
-//go:generate parcello -r generate
+//go:generate parcello -r embed
 ```
 
 When you run:
@@ -115,7 +115,7 @@ time may increase significantly. We are working on better approach by using
 $ parcello -h
 
 NAME:
-   parcello - Golang Resource Bundler
+   parcello - Golang Resource Bundler and Embedder
 
 USAGE:
    parcello [global options]
@@ -124,7 +124,7 @@ VERSION:
    0.7
 
 COMMANDS:
-     generate  A command for generating compilable resources
+     embed     Command for generating compilable resources
      help, h   Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
