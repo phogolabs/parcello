@@ -1,3 +1,3 @@
 package public
 
-//go:generate parcello -r
+//go:generate parcello -r embed
