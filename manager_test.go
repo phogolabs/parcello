@@ -76,7 +76,7 @@ var _ = Describe("Manager", func() {
 			It("returns an error", func() {
 				group, err := manager.Root("/resource/reports/2018.txt")
 				Expect(group).To(BeNil())
-				Expect(err).To(MatchError("Resource hierarchy not found"))
+				Expect(err).To(MatchError("Resource not found"))
 			})
 		})
 

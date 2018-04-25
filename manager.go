@@ -82,7 +82,7 @@ func (m *Manager) Root(name string) (*Manager, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("Resource hierarchy not found")
+	return nil, fmt.Errorf("Resource not found")
 }
 
 // Open opens an embedded resource for read
