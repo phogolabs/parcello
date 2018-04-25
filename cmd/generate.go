@@ -16,8 +16,8 @@ type ResourceGenerator struct {
 func (r *ResourceGenerator) CreateCommand() cli.Command {
 	return cli.Command{
 		Name:         "generate",
-		Usage:        "A group of commands for generating compilable resources",
-		Description:  "A group of commands for generating compilable resources",
+		Usage:        "A command for generating compilable resources",
+		Description:  "A command for generating compilable resources",
 		BashComplete: cli.DefaultAppComplete,
 		Before:       r.before,
 		Action:       r.generate,
