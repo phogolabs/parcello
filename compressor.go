@@ -33,7 +33,7 @@ type ZipCompressor struct {
 
 // Compress compresses given source in tar.gz
 func (e *ZipCompressor) Compress(ctx *CompressorContext) (*BundleInfo, error) {
-	count, err := e.write(ctx.FileSystem, ctx.Writer)
+	count, err := e.write(ctx)
 
 	if err != nil {
 		return nil, err
@@ -49,11 +49,15 @@ func (e *ZipCompressor) Compress(ctx *CompressorContext) (*BundleInfo, error) {
 	}, nil
 }
 
-func (e *ZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int, error) {
-	compressor := zip.NewWriter(bundle)
+func (e *ZipCompressor) write(ctx *CompressorContext) (int, error) {
+	compressor := zip.NewWriter(ctx.Writer)
+	if ctx.Offset > 0 {
+		compressor.SetOffset(ctx.Offset)
+	}
+
 	count := 0
 
-	err := fileSystem.Walk("/", func(path string, info os.FileInfo, err error) error {
+	err := ctx.FileSystem.Walk("/", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -69,7 +73,7 @@ func (e *ZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int, err
 			}
 		}
 
-		if err = e.walk(compressor, fileSystem, path, info); err != nil {
+		if err = e.walk(compressor, ctx.FileSystem, path, info); err != nil {
 			return err
 		}
 
