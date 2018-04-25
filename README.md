@@ -22,6 +22,7 @@ Note that we may introduce breaking changes until we reach v1.0.
 
 - [x] Rename the tool in order not to clash with [parcel-bundler](https://github.com/parcel-bundler/parcel)
 - [x] Support [http.FileSystem](https://golang.org/pkg/net/http/#FileSystem)
+- [ ] Bundle resource as ZIP archive in the end of built Golang binary
 - [ ] ~~Support embedded COFF resources~~ (postponed until we accomplish a spike that works on all platforms)
 
 ## Installation
@@ -45,7 +46,7 @@ You can use the parcello command line interface to bundle the desired resources
 recursively:
 
 ```console
-$ parcello -r -d <resource_dir_source> -b <bundle_dir_destination>
+$ parcello -r -d <resource_dir_source> -b <bundle_dir_destination> generate
 ```
 
 However, the best way to use the tool is via `go generate`. In order to embed all
@@ -56,7 +57,7 @@ following comment:
 // Package database contains the database artefacts of GOM as embedded resource
 package database
 
-//go:generate parcello -r
+//go:generate parcello -r generate
 ```
 
 When you run:
