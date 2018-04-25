@@ -82,7 +82,7 @@ func (m *Manager) Root(name string) (*Manager, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("Resource not found")
+	return nil, fmt.Errorf("Resource '%s' not found", name)
 }
 
 // Open opens an embedded resource for read
