@@ -88,7 +88,7 @@ func run(ctx *cli.Context) error {
 				InlcudeDocs: ctx.BoolT("include-docs"),
 			},
 		},
-		Compressor: &parcello.TarGZipCompressor{
+		Compressor: &parcello.ZipCompressor{
 			Config: &parcello.CompressorConfig{
 				Logger:         logger(ctx),
 				Filename:       "resource",

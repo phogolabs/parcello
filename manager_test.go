@@ -22,7 +22,7 @@ var _ = Describe("Manager", func() {
 		manager = &parcello.Manager{}
 
 		var err error
-		compressor := parcello.TarGZipCompressor{
+		compressor := parcello.ZipCompressor{
 			Config: &parcello.CompressorConfig{
 				Logger:   ioutil.Discard,
 				Filename: "bundle",
@@ -49,7 +49,7 @@ var _ = Describe("Manager", func() {
 
 		Context("when the resource is not tar.gz", func() {
 			It("returns an error", func() {
-				Expect(manager.Add([]byte("lol"))).To(MatchError("unexpected EOF"))
+				Expect(manager.Add([]byte("lol"))).To(MatchError("zip: not a valid zip file"))
 			})
 
 			It("panics", func() {

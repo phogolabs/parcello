@@ -1,16 +1,15 @@
 package parcello
 
 import (
-	"archive/tar"
+	"archive/zip"
 	"bytes"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 )
 
-var _ Compressor = &TarGZipCompressor{}
+var _ Compressor = &ZipCompressor{}
 
 // ErrSkipResource skips a particular file from processing
 var ErrSkipResource = fmt.Errorf("Skip Resource Error")
@@ -27,14 +26,14 @@ type CompressorConfig struct {
 	Recurive bool
 }
 
-// TarGZipCompressor compresses content as GZip tarball
-type TarGZipCompressor struct {
+// ZipCompressor compresses content as GZip tarball
+type ZipCompressor struct {
 	// Config controls how the compression is made
 	Config *CompressorConfig
 }
 
 // Compress compresses given source in tar.gz
-func (e *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
+func (e *ZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 	buffer := &bytes.Buffer{}
 	count, err := e.write(fileSystem, buffer)
 
@@ -55,9 +54,8 @@ func (e *TarGZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 	return bundle, nil
 }
 
-func (e *TarGZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int, error) {
-	compressor := gzip.NewWriter(bundle)
-	bundler := tar.NewWriter(compressor)
+func (e *ZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int, error) {
+	compressor := zip.NewWriter(bundle)
 	count := 0
 
 	err := fileSystem.Walk("/", func(path string, info os.FileInfo, err error) error {
@@ -76,7 +74,7 @@ func (e *TarGZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int,
 			}
 		}
 
-		if err = e.walk(bundler, fileSystem, path, info); err != nil {
+		if err = e.walk(compressor, fileSystem, path, info); err != nil {
 			return err
 		}
 
@@ -88,26 +86,28 @@ func (e *TarGZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int,
 		return count, err
 	}
 
-	_ = bundler.Flush()
 	_ = compressor.Flush()
 
-	if ioErr := bundler.Close(); err == nil {
+	if ioErr := compressor.Close(); err == nil {
 		err = ioErr
 	}
 
 	return count, err
 }
 
-func (e *TarGZipCompressor) walk(bundler *tar.Writer, fileSystem FileSystem, path string, info os.FileInfo) error {
+func (e *ZipCompressor) walk(compressor *zip.Writer, fileSystem FileSystem, path string, info os.FileInfo) error {
 	fmt.Fprintln(e.Config.Logger, fmt.Sprintf("Compressing '%s'", path))
 
-	header, err := tar.FileInfoHeader(info, path)
+	header, err := zip.FileInfoHeader(info)
 	if err != nil {
 		return err
 	}
 
+	header.Method = zip.Deflate
 	header.Name = path
-	if err = bundler.WriteHeader(header); err != nil {
+
+	writer, err := compressor.CreateHeader(header)
+	if err != nil {
 		return err
 	}
 
@@ -122,11 +122,11 @@ func (e *TarGZipCompressor) walk(bundler *tar.Writer, fileSystem FileSystem, pat
 		}
 	}()
 
-	_, err = io.Copy(bundler, resource)
+	_, err = io.Copy(writer, resource)
 	return err
 }
 
-func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
+func (e *ZipCompressor) filter(path string, info os.FileInfo) error {
 	if info == nil {
 		return ErrSkipResource
 	}
@@ -146,7 +146,7 @@ func (e *TarGZipCompressor) filter(path string, info os.FileInfo) error {
 	return ErrSkipResource
 }
 
-func (e *TarGZipCompressor) ignore(path string, info os.FileInfo) error {
+func (e *ZipCompressor) ignore(path string, info os.FileInfo) error {
 	ignore := append(e.Config.IgnorePatterns, "*.go")
 
 	for _, pattern := range ignore {

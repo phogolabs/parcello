@@ -1,11 +1,10 @@
 package parcello_test
 
 import (
-	"archive/tar"
-	"bytes"
-	"compress/gzip"
+	"archive/zip"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,13 +12,13 @@ import (
 	"github.com/phogolabs/parcello/fake"
 )
 
-var _ = Describe("TarGZipCompressor", func() {
+var _ = Describe("ZipCompressor", func() {
 	var (
-		compressor *parcello.TarGZipCompressor
+		compressor *parcello.ZipCompressor
 	)
 
 	BeforeEach(func() {
-		compressor = &parcello.TarGZipCompressor{
+		compressor = &parcello.ZipCompressor{
 			Config: &parcello.CompressorConfig{
 				Logger:   GinkgoWriter,
 				Filename: "bundle",
@@ -36,31 +35,14 @@ var _ = Describe("TarGZipCompressor", func() {
 		Expect(bundle).NotTo(BeNil())
 		Expect(bundle.Name).To(Equal("bundle"))
 
-		body := bytes.NewBuffer(bundle.Body)
-		gzipper, err := gzip.NewReader(body)
+		reader, err := zip.NewReader(strings.NewReader(string(bundle.Body)), int64(len(bundle.Body)))
 		Expect(err).To(BeNil())
 
-		reader := tar.NewReader(gzipper)
-
-		header, err := reader.Next()
-		Expect(err).To(BeNil())
-		Expect(header.Name).To(Equal("resource/reports/2018.txt"))
-
-		header, err = reader.Next()
-		Expect(err).To(BeNil())
-		Expect(header.Name).To(Equal("resource/scripts/schema.sql"))
-
-		header, err = reader.Next()
-		Expect(err).To(BeNil())
-		Expect(header.Name).To(Equal("resource/templates/html/index.html"))
-
-		header, err = reader.Next()
-		Expect(err).To(BeNil())
-		Expect(header.Name).To(Equal("resource/templates/yml/schema.yml"))
-
-		header, err = reader.Next()
-		Expect(header).To(BeNil())
-		Expect(err).To(MatchError("unexpected EOF"))
+		Expect(reader.File).To(HaveLen(4))
+		Expect(reader.File[0].Name).To(Equal("resource/reports/2018.txt"))
+		Expect(reader.File[1].Name).To(Equal("resource/scripts/schema.sql"))
+		Expect(reader.File[2].Name).To(Equal("resource/templates/html/index.html"))
+		Expect(reader.File[3].Name).To(Equal("resource/templates/yml/schema.yml"))
 	})
 
 	Context("whene ingore pattern is provided", func() {
@@ -73,27 +55,13 @@ var _ = Describe("TarGZipCompressor", func() {
 			Expect(bundle).NotTo(BeNil())
 			Expect(bundle.Name).To(Equal("bundle"))
 
-			body := bytes.NewBuffer(bundle.Body)
-			gzipper, err := gzip.NewReader(body)
+			reader, err := zip.NewReader(strings.NewReader(string(bundle.Body)), int64(len(bundle.Body)))
 			Expect(err).To(BeNil())
 
-			reader := tar.NewReader(gzipper)
-
-			header, err := reader.Next()
-			Expect(err).To(BeNil())
-			Expect(header.Name).To(Equal("resource/scripts/schema.sql"))
-
-			header, err = reader.Next()
-			Expect(err).To(BeNil())
-			Expect(header.Name).To(Equal("resource/templates/html/index.html"))
-
-			header, err = reader.Next()
-			Expect(err).To(BeNil())
-			Expect(header.Name).To(Equal("resource/templates/yml/schema.yml"))
-
-			header, err = reader.Next()
-			Expect(header).To(BeNil())
-			Expect(err).To(MatchError("unexpected EOF"))
+			Expect(reader.File).To(HaveLen(3))
+			Expect(reader.File[0].Name).To(Equal("resource/scripts/schema.sql"))
+			Expect(reader.File[1].Name).To(Equal("resource/templates/html/index.html"))
+			Expect(reader.File[2].Name).To(Equal("resource/templates/yml/schema.yml"))
 		})
 
 		Context("when the pattern is directory", func() {
@@ -106,23 +74,10 @@ var _ = Describe("TarGZipCompressor", func() {
 				Expect(bundle).NotTo(BeNil())
 				Expect(bundle.Name).To(Equal("bundle"))
 
-				body := bytes.NewBuffer(bundle.Body)
-				gzipper, err := gzip.NewReader(body)
+				reader, err := zip.NewReader(strings.NewReader(string(bundle.Body)), int64(len(bundle.Body)))
 				Expect(err).To(BeNil())
-
-				reader := tar.NewReader(gzipper)
-
-				header, err := reader.Next()
-				Expect(err).To(BeNil())
-				Expect(header.Name).To(Equal("resource/reports/2018.txt"))
-
-				header, err = reader.Next()
-				Expect(err).To(BeNil())
-				Expect(header.Name).To(Equal("resource/scripts/schema.sql"))
-
-				header, err = reader.Next()
-				Expect(header).To(BeNil())
-				Expect(err).To(MatchError("unexpected EOF"))
+				Expect(reader.File[0].Name).To(Equal("resource/reports/2018.txt"))
+				Expect(reader.File[1].Name).To(Equal("resource/scripts/schema.sql"))
 			})
 		})
 	})

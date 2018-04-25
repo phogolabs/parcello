@@ -1,9 +1,7 @@
 package parcello
 
 import (
-	"archive/tar"
-	"bytes"
-	"compress/gzip"
+	"archive/zip"
 	"errors"
 	"fmt"
 	"io"
@@ -41,26 +39,16 @@ func (m *Manager) Add(binary Binary) error {
 		m.root = &Node{Name: "/", IsDir: true}
 	}
 
-	gzipper, err := gzip.NewReader(bytes.NewBuffer(binary))
+	reader, err := zip.NewReader(strings.NewReader(string(binary)), int64(len(binary)))
 	if err != nil {
 		return err
 	}
 
-	reader := tar.NewReader(gzipper)
 	return m.uncompress(reader)
 }
 
-func (m *Manager) uncompress(reader *tar.Reader) error {
-	for {
-		header, err := reader.Next()
-		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
+func (m *Manager) uncompress(reader *zip.Reader) error {
+	for _, header := range reader.File {
 		path := split(header.Name)
 		node := add(path, m.root)
 
@@ -68,10 +56,22 @@ func (m *Manager) uncompress(reader *tar.Reader) error {
 			return fmt.Errorf("Invalid path: '%s'", header.Name)
 		}
 
-		content, _ := ioutil.ReadAll(reader)
+		file, err := header.Open()
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		content, err := ioutil.ReadAll(file)
+		if err != nil {
+			return err
+		}
+
 		node.IsDir = false
 		node.Content = &content
 	}
+
+	return nil
 }
 
 // Root returns a sub-manager for given path
