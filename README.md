@@ -124,7 +124,7 @@ VERSION:
    0.7
 
 COMMANDS:
-     embed     Command for generating compilable resources
+     embed     Generates compilable resources
      help, h   Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:

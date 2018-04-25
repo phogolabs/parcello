@@ -16,8 +16,8 @@ type ResourceEmbedder struct {
 func (r *ResourceEmbedder) CreateCommand() cli.Command {
 	return cli.Command{
 		Name:         "embed",
-		Usage:        "Command for generating compilable resources",
-		Description:  "Command for generating compilable resources",
+		Usage:        "Generates compilable resources",
+		Description:  "Generates compilable resources",
 		BashComplete: cli.DefaultAppComplete,
 		Before:       r.before,
 		Action:       r.generate,
