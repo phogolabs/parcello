@@ -51,7 +51,7 @@ func (g *Generator) Compose(bundle *Bundle) error {
 	fmt.Fprintln(template, "\t})")
 	fmt.Fprintln(template, "}")
 
-	return g.write(bundle.Name, template.Bytes())
+	return g.write(bundle.Info.Name, template.Bytes())
 }
 
 func (g *Generator) prepare(data []byte) []byte {

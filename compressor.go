@@ -2,7 +2,6 @@ package parcello
 
 import (
 	"archive/zip"
-	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -33,9 +32,8 @@ type ZipCompressor struct {
 }
 
 // Compress compresses given source in tar.gz
-func (e *ZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
-	buffer := &bytes.Buffer{}
-	count, err := e.write(fileSystem, buffer)
+func (e *ZipCompressor) Compress(ctx *CompressorContext) (*BundleInfo, error) {
+	count, err := e.write(ctx.FileSystem, ctx.Writer)
 
 	if err != nil {
 		return nil, err
@@ -45,13 +43,10 @@ func (e *ZipCompressor) Compress(fileSystem FileSystem) (*Bundle, error) {
 		return nil, nil
 	}
 
-	bundle := &Bundle{
-		Name:   e.Config.Filename,
-		Length: count,
-		Body:   buffer.Bytes(),
-	}
-
-	return bundle, nil
+	return &BundleInfo{
+		Name:  e.Config.Filename,
+		Count: count,
+	}, nil
 }
 
 func (e *ZipCompressor) write(fileSystem FileSystem, bundle io.Writer) (int, error) {

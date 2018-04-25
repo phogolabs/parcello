@@ -1,6 +1,7 @@
 package parcello_test
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -30,10 +31,18 @@ var _ = Describe("Manager", func() {
 			},
 		}
 
-		bundle, err := compressor.Compress(parcello.Dir("./fixture"))
+		body := &bytes.Buffer{}
+		fileSystem := parcello.Dir("./fixture")
+
+		ctx := &parcello.CompressorContext{
+			Writer:     body,
+			FileSystem: fileSystem,
+		}
+
+		_, err = compressor.Compress(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
-		resource = bundle.Body
+		resource = body.Bytes()
 	})
 
 	JustBeforeEach(func() {

@@ -8,28 +8,28 @@ import (
 )
 
 type Compressor struct {
-	CompressStub        func(fileSystem parcello.FileSystem) (*parcello.Bundle, error)
+	CompressStub        func(ctx *parcello.CompressorContext) (*parcello.BundleInfo, error)
 	compressMutex       sync.RWMutex
 	compressArgsForCall []struct {
-		fileSystem parcello.FileSystem
+		ctx *parcello.CompressorContext
 	}
 	compressReturns struct {
-		result1 *parcello.Bundle
+		result1 *parcello.BundleInfo
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Compressor) Compress(fileSystem parcello.FileSystem) (*parcello.Bundle, error) {
+func (fake *Compressor) Compress(ctx *parcello.CompressorContext) (*parcello.BundleInfo, error) {
 	fake.compressMutex.Lock()
 	fake.compressArgsForCall = append(fake.compressArgsForCall, struct {
-		fileSystem parcello.FileSystem
-	}{fileSystem})
-	fake.recordInvocation("Compress", []interface{}{fileSystem})
+		ctx *parcello.CompressorContext
+	}{ctx})
+	fake.recordInvocation("Compress", []interface{}{ctx})
 	fake.compressMutex.Unlock()
 	if fake.CompressStub != nil {
-		return fake.CompressStub(fileSystem)
+		return fake.CompressStub(ctx)
 	}
 	return fake.compressReturns.result1, fake.compressReturns.result2
 }
@@ -40,16 +40,16 @@ func (fake *Compressor) CompressCallCount() int {
 	return len(fake.compressArgsForCall)
 }
 
-func (fake *Compressor) CompressArgsForCall(i int) parcello.FileSystem {
+func (fake *Compressor) CompressArgsForCall(i int) *parcello.CompressorContext {
 	fake.compressMutex.RLock()
 	defer fake.compressMutex.RUnlock()
-	return fake.compressArgsForCall[i].fileSystem
+	return fake.compressArgsForCall[i].ctx
 }
 
-func (fake *Compressor) CompressReturns(result1 *parcello.Bundle, result2 error) {
+func (fake *Compressor) CompressReturns(result1 *parcello.BundleInfo, result2 error) {
 	fake.CompressStub = nil
 	fake.compressReturns = struct {
-		result1 *parcello.Bundle
+		result1 *parcello.BundleInfo
 		result2 error
 	}{result1, result2}
 }

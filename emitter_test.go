@@ -31,13 +31,18 @@ var _ = Describe("Emitter", func() {
 		resource = parcello.NewResourceFile(node)
 
 		bundle = &parcello.Bundle{
-			Name:   "resource",
-			Body:   []byte("resource"),
-			Length: 20,
+			Info: &parcello.BundleInfo{
+				Name:  "resource",
+				Count: 20,
+			},
+			Body: []byte("resource"),
 		}
 
 		compressor = &fake.Compressor{}
-		compressor.CompressReturns(bundle, nil)
+		compressor.CompressStub = func(ctx *parcello.CompressorContext) (*parcello.BundleInfo, error) {
+			ctx.Writer.Write(bundle.Body)
+			return bundle.Info, nil
+		}
 
 		composer = &fake.Composer{}
 
@@ -55,7 +60,9 @@ var _ = Describe("Emitter", func() {
 	It("emits the provided source successfully", func() {
 		Expect(emitter.Emit()).To(Succeed())
 		Expect(compressor.CompressCallCount()).To(Equal(1))
-		Expect(compressor.CompressArgsForCall(0)).To(Equal(fileSystem))
+
+		ctx := compressor.CompressArgsForCall(0)
+		Expect(ctx.FileSystem).To(Equal(fileSystem))
 
 		Expect(composer.ComposeCallCount()).To(Equal(1))
 		Expect(composer.ComposeArgsForCall(0)).To(Equal(bundle))
@@ -67,7 +74,8 @@ var _ = Describe("Emitter", func() {
 
 			Expect(emitter.Emit()).To(Succeed())
 			Expect(compressor.CompressCallCount()).To(Equal(1))
-			Expect(compressor.CompressArgsForCall(0)).To(Equal(fileSystem))
+			ctx := compressor.CompressArgsForCall(0)
+			Expect(ctx.FileSystem).To(Equal(fileSystem))
 			Expect(composer.ComposeCallCount()).To(BeZero())
 		})
 	})
