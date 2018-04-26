@@ -6,6 +6,7 @@ import (
 )
 
 var _ FileSystem = Dir("")
+var _ FileSystemManager = Dir("")
 
 // Dir implements FileSystem using the native file system restricted to a
 // specific directory tree.
@@ -40,4 +41,14 @@ func (d Dir) Walk(dir string, fn filepath.WalkFunc) error {
 		path, _ = filepath.Rel(string(d), path)
 		return fn(path, info, err)
 	})
+}
+
+// Root returns a sub-manager for given path
+func (d Dir) Root(name string) (FileSystemManager, error) {
+	return Dir(filepath.Join(string(d), name)), nil
+}
+
+// Add adds resource bundle to the dir. (noop)
+func (d Dir) Add(binary Binary) error {
+	return nil
 }

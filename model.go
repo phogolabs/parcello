@@ -28,6 +28,15 @@ type FileSystem interface {
 	OpenFile(name string, flag int, perm os.FileMode) (File, error)
 }
 
+// FileSystemManager is a file system that can create sub-file-systems
+type FileSystemManager interface {
+	FileSystem
+	// Root returns a sub-file-system
+	Root(name string) (FileSystemManager, error)
+	// Add resource bundle to the manager
+	Add(binary Binary) error
+}
+
 // Binary represents a resource blob content
 type Binary = []byte
 

@@ -1,16 +1,34 @@
 package parcello
 
+import "os"
+
 // ResourceManager keeps track of all resources
-var ResourceManager = &Manager{}
+var ResourceManager FileSystemManager
 
 func init() {
 	var err error
 
-	ResourceManager, err = NewManager()
-
-	if err != nil {
+	if ResourceManager, err = manager(); err != nil {
 		panic(err)
 	}
+}
+
+func manager() (FileSystemManager, error) {
+	if mode := os.Getenv("PARCELLO_DEV"); mode != "" {
+		dir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+
+		return Dir(dir), nil
+	}
+
+	manager, err := NewManager()
+	if err != nil {
+		return nil, err
+	}
+
+	return manager, nil
 }
 
 // AddResource adds resource to the default resource manager
@@ -28,7 +46,7 @@ func Open(name string) (ReadOnlyFile, error) {
 
 // Root returns a sub-manager for given path, if the path does not exist
 // Note that the method may panic if the resource path is not found
-func Root(name string) *Manager {
+func Root(name string) FileSystemManager {
 	manager, err := ResourceManager.Root(name)
 	if err != nil {
 		panic(err)

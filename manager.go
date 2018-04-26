@@ -27,6 +27,7 @@ var (
 )
 
 var _ FileSystem = &Manager{}
+var _ FileSystemManager = &Manager{}
 
 // Manager represents a virtual in memory file system
 type Manager struct {
@@ -114,7 +115,7 @@ func (m *Manager) uncompress(reader *zip.Reader) error {
 }
 
 // Root returns a sub-manager for given path
-func (m *Manager) Root(name string) (*Manager, error) {
+func (m *Manager) Root(name string) (FileSystemManager, error) {
 	if _, node := find(split(name), nil, m.root); node != nil {
 		if node.IsDir {
 			return &Manager{root: node}, nil

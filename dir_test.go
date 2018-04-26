@@ -34,6 +34,20 @@ var _ = Describe("Dir", func() {
 		})
 	})
 
+	Context("Add", func() {
+		It("adds the resource to the manager", func() {
+			Expect(dir.Add([]byte{})).To(Succeed())
+		})
+	})
+
+	Context("Root", func() {
+		It("creates a sub file system", func() {
+			d, err := dir.Root("root")
+			Expect(err).To(BeNil())
+			Expect(fmt.Sprintf("%v", d)).To(Equal(filepath.Join(string(dir), "root")))
+		})
+	})
+
 	Context("OpenFile", func() {
 		It("opens a file successfully", func() {
 			file, err := dir.OpenFile("sample.txt", os.O_RDONLY, 0)
