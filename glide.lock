@@ -1,10 +1,14 @@
 hash: d6fd08956cfde5fdc31bef1abf8b3926f7864b4b8f521e6c2cf1e8936e55e5c4
-updated: 2018-04-19T14:48:21.748534+02:00
+updated: 2018-04-26T09:39:53.950652+01:00
 imports:
 - name: github.com/blang/vfs
   version: c14afcac17253ce7418da751ec6b1988790cdc8f
   subpackages:
   - memfs
+- name: github.com/daaku/go.zipexe
+  version: a5fe2436ffcb3236e175e5149162b41cd28bd27d
+- name: github.com/kardianos/osext
+  version: ae77be60afb1dcacde03767a8c37337fad28ac14
 - name: github.com/urfave/cli
   version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
 - name: golang.org/x/tools
