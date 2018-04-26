@@ -76,6 +76,19 @@ var _ = Describe("Bundler", func() {
 		Expect(cctx.Offset).To(Equal(binaryInfo.Size()))
 	})
 
+	Context("when writing to the fail fails", func() {
+		BeforeEach(func() {
+			f := &fake.File{}
+			f.StatReturns(binaryInfo, nil)
+			f.WriteReturns(0, fmt.Errorf("Oh no!"))
+			target.OpenFileReturns(f, nil)
+		})
+
+		It("returns an error", func() {
+			Expect(bundler.Bundle(ctx)).To(MatchError("Oh no!"))
+		})
+	})
+
 	Context("when opening the binary fails", func() {
 		BeforeEach(func() {
 			target.OpenFileReturns(nil, fmt.Errorf("Oh no!"))

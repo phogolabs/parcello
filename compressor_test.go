@@ -49,6 +49,20 @@ var _ = Describe("ZipCompressor", func() {
 		Expect(reader.File[3].Name).To(Equal("resource/templates/yml/schema.yml"))
 	})
 
+	Context("when the offset is provided", func() {
+		It("compresses a given hierarchy", func() {
+			fileSystem := parcello.Dir("./fixture")
+
+			ctx := &parcello.CompressorContext{
+				FileSystem: fileSystem,
+			}
+
+			bundle, err := compressor.Compress(ctx)
+			Expect(err).To(BeNil())
+			Expect(bundle).NotTo(BeNil())
+		})
+	})
+
 	Context("whene ingore pattern is provided", func() {
 		It("ignores that files", func() {
 			compressor.Config.IgnorePatterns = []string{"*/**/*.txt"}
