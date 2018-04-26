@@ -52,7 +52,7 @@ func main() {
 			},
 			cli.StringFlag{
 				Name:  "resource-type, t",
-				Usage: "resource type. supported: bundle, source-code",
+				Usage: "resource type. (supported: bundle, source-code)",
 				Value: "source-code",
 			},
 			cli.StringSliceFlag{

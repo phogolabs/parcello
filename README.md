@@ -140,7 +140,7 @@ GLOBAL OPTIONS:
    --quiet, -q                      disable logging
    --recursive, -r                  embed or bundle the resources recursively
    --resource-dir value, -d value   path to directory (default: ".")
-   --resource-type value, -t value  resource type. supported: bundle, source-code (default: "source-code")
+   --resource-type value, -t value  resource type. (supported: bundle, source-code) (default: "source-code")
    --help, -h                       show help
    --version, -v                    print the version
 ```
