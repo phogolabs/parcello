@@ -55,6 +55,7 @@ var _ = Describe("ZipCompressor", func() {
 
 			ctx := &parcello.CompressorContext{
 				FileSystem: fileSystem,
+				Offset:     1,
 			}
 
 			bundle, err := compressor.Compress(ctx)
