@@ -8,20 +8,20 @@ import (
 )
 
 type Compressor struct {
-	CompressStub        func(ctx *parcello.CompressorContext) (*parcello.BundleInfo, error)
+	CompressStub        func(ctx *parcello.CompressorContext) (*parcello.Bundle, error)
 	compressMutex       sync.RWMutex
 	compressArgsForCall []struct {
 		ctx *parcello.CompressorContext
 	}
 	compressReturns struct {
-		result1 *parcello.BundleInfo
+		result1 *parcello.Bundle
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Compressor) Compress(ctx *parcello.CompressorContext) (*parcello.BundleInfo, error) {
+func (fake *Compressor) Compress(ctx *parcello.CompressorContext) (*parcello.Bundle, error) {
 	fake.compressMutex.Lock()
 	fake.compressArgsForCall = append(fake.compressArgsForCall, struct {
 		ctx *parcello.CompressorContext
@@ -46,10 +46,10 @@ func (fake *Compressor) CompressArgsForCall(i int) *parcello.CompressorContext {
 	return fake.compressArgsForCall[i].ctx
 }
 
-func (fake *Compressor) CompressReturns(result1 *parcello.BundleInfo, result2 error) {
+func (fake *Compressor) CompressReturns(result1 *parcello.Bundle, result2 error) {
 	fake.CompressStub = nil
 	fake.compressReturns = struct {
-		result1 *parcello.BundleInfo
+		result1 *parcello.Bundle
 		result2 error
 	}{result1, result2}
 }

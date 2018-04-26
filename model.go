@@ -52,8 +52,6 @@ type Composer interface {
 type CompressorContext struct {
 	// FileSystem file system that contain the files which will be compressed
 	FileSystem FileSystem
-	// Writer is the destination writer
-	Writer io.Writer
 	// Offset that should be applied
 	Offset int64
 }
@@ -61,21 +59,15 @@ type CompressorContext struct {
 // Compressor compresses given resource
 type Compressor interface {
 	// Compress compresses given source
-	Compress(ctx *CompressorContext) (*BundleInfo, error)
-}
-
-// BundleInfo represents a bundled resource info
-type BundleInfo struct {
-	// Name of the resource
-	Name string
-	// Count returns the count of files in the bundle
-	Count int
+	Compress(ctx *CompressorContext) (*Bundle, error)
 }
 
 // Bundle represents a bundled resource
 type Bundle struct {
-	// Info for this bundle
-	Info *BundleInfo
+	// Name of the resource
+	Name string
+	// Count returns the count of files in the bundle
+	Count int
 	// Body of the resource
 	Body []byte
 }

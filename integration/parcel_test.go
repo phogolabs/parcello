@@ -15,14 +15,21 @@ import (
 
 var _ = Describe("Parcel", func() {
 	var (
-		cmd      *exec.Cmd
-		dir      string
-		args     []string
-		resource string
+		cmd        *exec.Cmd
+		dir        string
+		binaryPath string
+		args       []string
+		resource   string
 	)
 
 	BeforeEach(func() {
 		args = []string{}
+
+		binaryDir, err := ioutil.TempDir("", "gom")
+		Expect(err).To(BeNil())
+
+		binaryPath = filepath.Join(binaryDir, "file")
+		Expect(ioutil.WriteFile(binaryPath, []byte("content"), 0700)).To(Succeed())
 	})
 
 	JustBeforeEach(func() {
@@ -162,6 +169,18 @@ var _ = Describe("Parcel", func() {
 				data, err := ioutil.ReadFile(resource)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(data)).To(ContainSubstring("package database"))
+			})
+		})
+
+		Context("when the resource type is bundle", func() {
+			BeforeEach(func() {
+				args = []string{"-r", "-t", "bundle", "-b", binaryPath}
+			})
+
+			It("bundles the resource into binary", func() {
+				session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+				Expect(err).NotTo(HaveOccurred())
+				Eventually(session).Should(gexec.Exit(0))
 			})
 		})
 	})

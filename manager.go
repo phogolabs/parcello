@@ -2,6 +2,7 @@ package parcello
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	zipexe "github.com/daaku/go.zipexe"
+	"github.com/kardianos/osext"
 )
 
 var (
@@ -30,6 +34,41 @@ type Manager struct {
 	root *Node
 }
 
+// NewManager creates a new manager
+func NewManager() (*Manager, error) {
+	manager := &Manager{
+		root: &Node{Name: "/", IsDir: true},
+	}
+
+	path, err := osext.Executable()
+	if err != nil {
+		return manager, nil
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	reader, err := zipexe.NewReader(file, info.Size())
+	if err != nil {
+		return manager, nil
+	}
+
+	if err = manager.uncompress(reader); err != nil {
+		return nil, err
+	}
+
+	return manager, nil
+}
+
 // Add adds resource to the manager
 func (m *Manager) Add(binary Binary) error {
 	m.rw.Lock()
@@ -39,7 +78,7 @@ func (m *Manager) Add(binary Binary) error {
 		m.root = &Node{Name: "/", IsDir: true}
 	}
 
-	reader, err := zip.NewReader(strings.NewReader(string(binary)), int64(len(binary)))
+	reader, err := zip.NewReader(bytes.NewReader(binary), int64(len(binary)))
 	if err != nil {
 		return err
 	}

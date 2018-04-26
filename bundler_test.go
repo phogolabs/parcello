@@ -34,10 +34,20 @@ var _ = Describe("Bundler", func() {
 
 		binary = &fake.File{}
 		binary.StatReturns(binaryInfo, nil)
-		compressor = &fake.Compressor{}
+
 		source = &fake.FileSystem{}
 		target = &fake.FileSystem{}
 		target.OpenFileReturns(binary, nil)
+
+		bundle := &parcello.Bundle{
+			Name:  "app",
+			Count: 1,
+			Body:  []byte("content"),
+		}
+
+		compressor = &fake.Compressor{}
+		compressor.CompressReturns(bundle, nil)
+
 		bundler = &parcello.Bundler{
 			Logger:     GinkgoWriter,
 			Compressor: compressor,
@@ -56,14 +66,13 @@ var _ = Describe("Bundler", func() {
 
 		name, opts, perm := target.OpenFileArgsForCall(0)
 		Expect(name).To(Equal(ctx.Name))
-		Expect(opts).To(Equal(os.O_WRONLY))
+		Expect(opts).To(Equal(os.O_WRONLY | os.O_APPEND))
 		Expect(perm).To(Equal(os.FileMode(0600)))
 
 		Expect(compressor.CompressCallCount()).To(Equal(1))
 
 		cctx := compressor.CompressArgsForCall(0)
 		Expect(cctx.FileSystem).To(Equal(source))
-		Expect(cctx.Writer).To(Equal(binary))
 		Expect(cctx.Offset).To(Equal(binaryInfo.Size()))
 	})
 
@@ -98,11 +107,8 @@ var _ = Describe("Bundler", func() {
 	})
 
 	Context("when the compressor fails", func() {
-		BeforeEach(func() {
-			compressor.CompressReturns(nil, fmt.Errorf("Oh no!"))
-		})
-
 		It("returns an error", func() {
+			compressor.CompressReturns(nil, fmt.Errorf("Oh no!"))
 			Expect(bundler.Bundle(ctx)).To(MatchError("Oh no!"))
 		})
 	})

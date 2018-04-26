@@ -24,9 +24,7 @@ var _ = Describe("Generator", func() {
 
 	BeforeEach(func() {
 		bundle = &parcello.Bundle{
-			Info: &parcello.BundleInfo{
-				Name: "bundle",
-			},
+			Name: "bundle",
 			Body: []byte{
 				31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 212, 146, 223, 171, 218,
 				48, 28, 197, 251, 156, 191, 226, 60, 110, 96, 103, 90, 107,

@@ -28,20 +28,18 @@ var _ = Describe("ZipCompressor", func() {
 	})
 
 	It("compresses a given hierarchy", func() {
-		body := &bytes.Buffer{}
 		fileSystem := parcello.Dir("./fixture")
 
 		ctx := &parcello.CompressorContext{
-			Writer:     body,
 			FileSystem: fileSystem,
 		}
 
-		info, err := compressor.Compress(ctx)
+		bundle, err := compressor.Compress(ctx)
 		Expect(err).To(BeNil())
-		Expect(info).NotTo(BeNil())
-		Expect(info.Name).To(Equal("bundle"))
+		Expect(bundle).NotTo(BeNil())
+		Expect(bundle.Name).To(Equal("bundle"))
 
-		reader, err := zip.NewReader(bytes.NewReader(body.Bytes()), int64(len(body.Bytes())))
+		reader, err := zip.NewReader(bytes.NewReader(bundle.Body), int64(len(bundle.Body)))
 		Expect(err).To(BeNil())
 
 		Expect(reader.File).To(HaveLen(4))
@@ -54,20 +52,18 @@ var _ = Describe("ZipCompressor", func() {
 	Context("whene ingore pattern is provided", func() {
 		It("ignores that files", func() {
 			compressor.Config.IgnorePatterns = []string{"*/**/*.txt"}
-			body := &bytes.Buffer{}
 			fileSystem := parcello.Dir("./fixture")
 
 			ctx := &parcello.CompressorContext{
-				Writer:     body,
 				FileSystem: fileSystem,
 			}
 
-			info, err := compressor.Compress(ctx)
+			bundle, err := compressor.Compress(ctx)
 			Expect(err).To(BeNil())
-			Expect(info).NotTo(BeNil())
-			Expect(info.Name).To(Equal("bundle"))
+			Expect(bundle).NotTo(BeNil())
+			Expect(bundle.Name).To(Equal("bundle"))
 
-			reader, err := zip.NewReader(bytes.NewReader(body.Bytes()), int64(len(body.Bytes())))
+			reader, err := zip.NewReader(bytes.NewReader(bundle.Body), int64(len(bundle.Body)))
 			Expect(err).To(BeNil())
 
 			Expect(reader.File).To(HaveLen(3))
@@ -80,19 +76,18 @@ var _ = Describe("ZipCompressor", func() {
 			It("ignores the directory and its files", func() {
 				compressor.Config.IgnorePatterns = []string{"resource/templates/**/*"}
 				fileSystem := parcello.Dir("./fixture")
-				body := &bytes.Buffer{}
 				ctx := &parcello.CompressorContext{
-					Writer:     body,
 					FileSystem: fileSystem,
 				}
 
-				info, err := compressor.Compress(ctx)
+				bundle, err := compressor.Compress(ctx)
 				Expect(err).To(BeNil())
-				Expect(info).NotTo(BeNil())
-				Expect(info.Name).To(Equal("bundle"))
+				Expect(bundle).NotTo(BeNil())
+				Expect(bundle.Name).To(Equal("bundle"))
 
-				reader, err := zip.NewReader(bytes.NewReader(body.Bytes()), int64(len(body.Bytes())))
+				reader, err := zip.NewReader(bytes.NewReader(bundle.Body), int64(len(bundle.Body)))
 				Expect(err).To(BeNil())
+
 				Expect(reader.File[0].Name).To(Equal("resource/reports/2018.txt"))
 				Expect(reader.File[1].Name).To(Equal("resource/scripts/schema.sql"))
 			})
@@ -103,9 +98,7 @@ var _ = Describe("ZipCompressor", func() {
 		It("returns an error", func() {
 			compressor.Config.IgnorePatterns = []string{"[*"}
 			fileSystem := parcello.Dir("./fixture")
-			body := &bytes.Buffer{}
 			ctx := &parcello.CompressorContext{
-				Writer:     body,
 				FileSystem: fileSystem,
 			}
 
@@ -120,9 +113,7 @@ var _ = Describe("ZipCompressor", func() {
 			compressor.Config.Recurive = false
 
 			fileSystem := parcello.Dir("./fixture")
-			body := &bytes.Buffer{}
 			ctx := &parcello.CompressorContext{
-				Writer:     body,
 				FileSystem: fileSystem,
 			}
 
@@ -138,9 +129,7 @@ var _ = Describe("ZipCompressor", func() {
 			fileSystem.WalkStub = parcello.Dir("./fixture").Walk
 			fileSystem.OpenFileReturns(nil, fmt.Errorf("Oh no!"))
 
-			body := &bytes.Buffer{}
 			ctx := &parcello.CompressorContext{
-				Writer:     body,
 				FileSystem: fileSystem,
 			}
 
@@ -157,15 +146,13 @@ var _ = Describe("ZipCompressor", func() {
 				return fn("/", nil, nil)
 			}
 
-			body := &bytes.Buffer{}
 			ctx := &parcello.CompressorContext{
-				Writer:     body,
 				FileSystem: fileSystem,
 			}
 
-			binary, err := compressor.Compress(ctx)
+			bundle, err := compressor.Compress(ctx)
 			Expect(err).To(BeNil())
-			Expect(binary).To(BeNil())
+			Expect(bundle).To(BeNil())
 		})
 	})
 
@@ -176,15 +163,13 @@ var _ = Describe("ZipCompressor", func() {
 				return fn("path", nil, fmt.Errorf("Oh no!"))
 			}
 
-			body := &bytes.Buffer{}
 			ctx := &parcello.CompressorContext{
-				Writer:     body,
 				FileSystem: fileSystem,
 			}
 
-			binary, err := compressor.Compress(ctx)
+			bundle, err := compressor.Compress(ctx)
 			Expect(err).To(MatchError("Oh no!"))
-			Expect(binary).To(BeNil())
+			Expect(bundle).To(BeNil())
 		})
 	})
 
@@ -193,15 +178,13 @@ var _ = Describe("ZipCompressor", func() {
 			fileSystem := &fake.FileSystem{}
 			fileSystem.WalkReturns(fmt.Errorf("Oh no!"))
 
-			body := &bytes.Buffer{}
 			ctx := &parcello.CompressorContext{
-				Writer:     body,
 				FileSystem: fileSystem,
 			}
 
-			binary, err := compressor.Compress(ctx)
+			bundle, err := compressor.Compress(ctx)
 			Expect(err).To(MatchError("Oh no!"))
-			Expect(binary).To(BeNil())
+			Expect(bundle).To(BeNil())
 		})
 	})
 })

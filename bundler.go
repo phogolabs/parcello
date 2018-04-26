@@ -26,20 +26,12 @@ type Bundler struct {
 
 // Bundle bundles the resources to the provided binary
 func (e *Bundler) Bundle(ctx *BundlerContext) error {
-	fmt.Fprintf(e.Logger, "Bundling resource(s) at '%s'", ctx.Name)
-
-	file, err := ctx.FileSystem.OpenFile(ctx.Name, os.O_WRONLY, 0600)
+	file, err := ctx.FileSystem.OpenFile(ctx.Name, os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		return err
 	}
 
 	defer file.Close()
-
-	cctx := &CompressorContext{
-		FileSystem: e.FileSystem,
-		Writer:     file,
-		Offset:     0,
-	}
 
 	finfo, ferr := file.Stat()
 	if ferr != nil {
@@ -50,7 +42,21 @@ func (e *Bundler) Bundle(ctx *BundlerContext) error {
 		return fmt.Errorf("'%s' is not a regular file", ctx.Name)
 	}
 
-	cctx.Offset = finfo.Size()
-	_, err = e.Compressor.Compress(cctx)
-	return err
+	cctx := &CompressorContext{
+		FileSystem: e.FileSystem,
+		Offset:     finfo.Size(),
+	}
+
+	fmt.Fprintf(e.Logger, "Bundling resource(s) at '%s'\n", ctx.Name)
+	bundle, cerr := e.Compressor.Compress(cctx)
+	if cerr != nil {
+		return cerr
+	}
+
+	if _, err = file.Write(bundle.Body); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(e.Logger, "Bundled %d resource(s) at '%s'\n", bundle.Count, ctx.Name)
+	return nil
 }

@@ -1,7 +1,6 @@
 package parcello_test
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -31,22 +30,28 @@ var _ = Describe("Manager", func() {
 			},
 		}
 
-		body := &bytes.Buffer{}
 		fileSystem := parcello.Dir("./fixture")
 
 		ctx := &parcello.CompressorContext{
-			Writer:     body,
 			FileSystem: fileSystem,
 		}
 
-		_, err = compressor.Compress(ctx)
+		bundle, err := compressor.Compress(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
-		resource = body.Bytes()
+		resource = bundle.Body
 	})
 
 	JustBeforeEach(func() {
 		Expect(manager.Add(resource)).To(Succeed())
+	})
+
+	Describe("NewManager", func() {
+		It("creates new manager successfully", func() {
+			m, err := parcello.NewManager()
+			Expect(m).NotTo(BeNil())
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 	Describe("Add", func() {

@@ -2,11 +2,13 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/phogolabs/parcello"
 	"github.com/urfave/cli"
@@ -48,6 +50,11 @@ func main() {
 				Usage: "Path to the bundle",
 				Value: ".",
 			},
+			cli.StringFlag{
+				Name:  "resource-type, t",
+				Usage: "Resource type (bundle or source-code)",
+				Value: "source-code",
+			},
 			cli.StringSliceFlag{
 				Name:  "ignore, i",
 				Usage: "Ignore file name",
@@ -66,16 +73,26 @@ func main() {
 }
 
 func run(ctx *cli.Context) error {
-	return embed(ctx)
+	rType := ctx.String("resource-type")
+
+	switch strings.ToLower(rType) {
+	case "source-code":
+		return embed(ctx)
+	case "bundle":
+		return bundle(ctx)
+	default:
+		err := fmt.Errorf("Invalid resource type '%s'", rType)
+		return cli.NewExitError(err.Error(), ErrCodeArg)
+	}
 }
 
 func embed(ctx *cli.Context) error {
-	resourceDir, err := filepath.Abs(ctx.GlobalString("resource-dir"))
+	resourceDir, err := filepath.Abs(ctx.String("resource-dir"))
 	if err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
-	bundlePath, err := filepath.Abs(ctx.GlobalString("bundle-path"))
+	bundlePath, err := filepath.Abs(ctx.String("bundle-path"))
 	if err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
@@ -96,13 +113,51 @@ func embed(ctx *cli.Context) error {
 			Config: &parcello.CompressorConfig{
 				Logger:         logger(ctx),
 				Filename:       "resource",
-				IgnorePatterns: ctx.GlobalStringSlice("ignore"),
-				Recurive:       ctx.GlobalBool("recursive"),
+				IgnorePatterns: ctx.StringSlice("ignore"),
+				Recurive:       ctx.Bool("recursive"),
 			},
 		},
 	}
 
 	if err := embedder.Embed(); err != nil {
+		return cli.NewExitError(err.Error(), ErrCodeArg)
+	}
+
+	return nil
+}
+
+func bundle(ctx *cli.Context) error {
+	resourceDir, err := filepath.Abs(ctx.String("resource-dir"))
+	if err != nil {
+		return cli.NewExitError(err.Error(), ErrCodeArg)
+	}
+
+	bundlePath, err := filepath.Abs(ctx.String("bundle-path"))
+	if err != nil {
+		return cli.NewExitError(err.Error(), ErrCodeArg)
+	}
+
+	bundler := &parcello.Bundler{
+		Logger:     logger(ctx),
+		FileSystem: parcello.Dir(resourceDir),
+		Compressor: &parcello.ZipCompressor{
+			Config: &parcello.CompressorConfig{
+				Logger:         logger(ctx),
+				Filename:       "resource",
+				IgnorePatterns: ctx.StringSlice("ignore"),
+				Recurive:       ctx.Bool("recursive"),
+			},
+		},
+	}
+
+	bundleDir, bundleName := filepath.Split(bundlePath)
+
+	bctx := &parcello.BundlerContext{
+		Name:       bundleName,
+		FileSystem: parcello.Dir(bundleDir),
+	}
+
+	if err := bundler.Bundle(bctx); err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 

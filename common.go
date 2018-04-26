@@ -3,6 +3,16 @@ package parcello
 // ResourceManager keeps track of all resources
 var ResourceManager = &Manager{}
 
+func init() {
+	var err error
+
+	ResourceManager, err = NewManager()
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 // AddResource adds resource to the default resource manager
 // Note that the method may panic if the resource not exists
 func AddResource(resource Binary) {

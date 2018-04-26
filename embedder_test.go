@@ -31,17 +31,14 @@ var _ = Describe("Embedder", func() {
 		resource = parcello.NewResourceFile(node)
 
 		bundle = &parcello.Bundle{
-			Info: &parcello.BundleInfo{
-				Name:  "resource",
-				Count: 20,
-			},
-			Body: []byte("resource"),
+			Name:  "resource",
+			Count: 20,
+			Body:  []byte("resource"),
 		}
 
 		compressor = &fake.Compressor{}
-		compressor.CompressStub = func(ctx *parcello.CompressorContext) (*parcello.BundleInfo, error) {
-			ctx.Writer.Write(bundle.Body)
-			return bundle.Info, nil
+		compressor.CompressStub = func(ctx *parcello.CompressorContext) (*parcello.Bundle, error) {
+			return bundle, nil
 		}
 
 		composer = &fake.Composer{}
