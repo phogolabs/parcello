@@ -50,9 +50,8 @@ var _ = Describe("Parcel", func() {
 	})
 
 	Describe("Embed", func() {
-
 		It("embeds resource on root level", func() {
-			cmd.Args = append(cmd.Args, "-r", "embed")
+			cmd.Args = append(cmd.Args, "-r")
 
 			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
@@ -71,7 +70,7 @@ var _ = Describe("Parcel", func() {
 
 		Context("when the commands.sql is ignored", func() {
 			BeforeEach(func() {
-				args = append(args, "-r", "-i", "commands.sql", "embed")
+				args = append(args, "-r", "-i", "commands.sql")
 			})
 
 			It("does not embed embedded resource for it", func() {
@@ -87,7 +86,7 @@ var _ = Describe("Parcel", func() {
 
 		Context("when the documentation is disabled", func() {
 			BeforeEach(func() {
-				args = append(args, "-r", "embed", "-include-docs=false")
+				args = append(args, "-r", "-include-docs=false")
 			})
 
 			It("does not include API documentation", func() {
@@ -107,7 +106,7 @@ var _ = Describe("Parcel", func() {
 
 		Context("when quite model is enabled", func() {
 			BeforeEach(func() {
-				args = append(args, "-r", "-q", "embed")
+				args = append(args, "-r", "-q")
 			})
 
 			It("does not print anything on stdout", func() {
@@ -134,7 +133,7 @@ var _ = Describe("Parcel", func() {
 
 		Context("when the directory is provided", func() {
 			BeforeEach(func() {
-				args = []string{"-r", "-d", "./database", "embed"}
+				args = []string{"-r", "-d", "./database"}
 			})
 
 			It("compresses the directory successfully", func() {
@@ -149,7 +148,7 @@ var _ = Describe("Parcel", func() {
 
 		Context("when the bundle-dir is provided", func() {
 			BeforeEach(func() {
-				args = []string{"-r", "-b", "./database", "embed"}
+				args = []string{"-r", "-b", "./database"}
 			})
 
 			It("returns an error", func() {

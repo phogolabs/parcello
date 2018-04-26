@@ -2,20 +2,22 @@
 package main
 
 import (
+	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sort"
 
-	"github.com/phogolabs/parcello/cmd"
+	"github.com/phogolabs/parcello"
 	"github.com/urfave/cli"
 )
 
+const (
+	// ErrCodeArg is returned when an invalid argument is passed to CLI
+	ErrCodeArg = 101
+)
+
 func main() {
-	embedder := &cmd.ResourceEmbedder{}
-
-	commands := []cli.Command{
-		embedder.CreateCommand(),
-	}
-
 	app := &cli.App{
 		Name:                 "parcello",
 		HelpName:             "parcello",
@@ -26,7 +28,7 @@ func main() {
 		EnableBashCompletion: true,
 		Writer:               os.Stdout,
 		ErrWriter:            os.Stderr,
-		Commands:             commands,
+		Action:               run,
 		Flags: []cli.Flag{
 			cli.BoolFlag{
 				Name:  "quiet, q",
@@ -42,13 +44,17 @@ func main() {
 				Value: ".",
 			},
 			cli.StringFlag{
-				Name:  "bundle-dir, b",
-				Usage: "Path to bundle directory",
+				Name:  "bundle-path, b",
+				Usage: "Path to the bundle",
 				Value: ".",
 			},
 			cli.StringSliceFlag{
 				Name:  "ignore, i",
 				Usage: "Ignore file name",
+			},
+			cli.BoolTFlag{
+				Name:  "include-docs",
+				Usage: "Include API documentation in generated source code",
 			},
 		},
 	}
@@ -56,10 +62,57 @@ func main() {
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 
-	for _, command := range commands {
-		sort.Sort(cli.FlagsByName(command.Flags))
-		sort.Sort(cli.CommandsByName(command.Subcommands))
+	app.Run(os.Args)
+}
+
+func run(ctx *cli.Context) error {
+	return embed(ctx)
+}
+
+func embed(ctx *cli.Context) error {
+	resourceDir, err := filepath.Abs(ctx.GlobalString("resource-dir"))
+	if err != nil {
+		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
-	app.Run(os.Args)
+	bundlePath, err := filepath.Abs(ctx.GlobalString("bundle-path"))
+	if err != nil {
+		return cli.NewExitError(err.Error(), ErrCodeArg)
+	}
+
+	_, packageName := filepath.Split(bundlePath)
+
+	embedder := &parcello.Embedder{
+		Logger:     logger(ctx),
+		FileSystem: parcello.Dir(resourceDir),
+		Composer: &parcello.Generator{
+			FileSystem: parcello.Dir(bundlePath),
+			Config: &parcello.GeneratorConfig{
+				Package:     packageName,
+				InlcudeDocs: ctx.BoolT("include-docs"),
+			},
+		},
+		Compressor: &parcello.ZipCompressor{
+			Config: &parcello.CompressorConfig{
+				Logger:         logger(ctx),
+				Filename:       "resource",
+				IgnorePatterns: ctx.GlobalStringSlice("ignore"),
+				Recurive:       ctx.GlobalBool("recursive"),
+			},
+		},
+	}
+
+	if err := embedder.Embed(); err != nil {
+		return cli.NewExitError(err.Error(), ErrCodeArg)
+	}
+
+	return nil
+}
+
+func logger(ctx *cli.Context) io.Writer {
+	if ctx.GlobalBool("quiet") {
+		return ioutil.Discard
+	}
+
+	return os.Stdout
 }
