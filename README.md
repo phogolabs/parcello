@@ -131,17 +131,18 @@ VERSION:
    0.7
 
 COMMANDS:
-     embed     Generates compilable resources
-     help, h   Shows a list of commands or help for one command
+     help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --bundle-dir value, -b value    Path to bundle directory (default: ".")
-   --ignore value, -i value        Ignore file name
-   --quiet, -q                     Disable logging
-   --recursive, -r                 Embed the resources recursively
-   --resource-dir value, -d value  Path to directory (default: ".")
-   --help, -h                      show help
-   --version, -v                   print the version
+   --bundle-path value, -b value    Path to the bundle (default: ".")
+   --ignore value, -i value         Ignore file name
+   --include-docs                   Include API documentation in generated source code
+   --quiet, -q                      Disable logging
+   --recursive, -r                  Embed the resources recursively
+   --resource-dir value, -d value   Path to directory (default: ".")
+   --resource-type value, -t value  Resource type (bundle or source-code) (default: "source-code")
+   --help, -h                       show help
+   --version, -v                    print the version
 ```
 
 ## Example
