@@ -10,9 +10,9 @@ import (
 	"github.com/phogolabs/parcello/fake"
 )
 
-var _ = Describe("Emitter", func() {
+var _ = Describe("Embedder", func() {
 	var (
-		emitter    *parcello.Emitter
+		embedder   *parcello.Embedder
 		composer   *fake.Composer
 		compressor *fake.Compressor
 		fileSystem *fake.FileSystem
@@ -49,7 +49,7 @@ var _ = Describe("Emitter", func() {
 		fileSystem = &fake.FileSystem{}
 		fileSystem.OpenFileReturns(resource, nil)
 
-		emitter = &parcello.Emitter{
+		embedder = &parcello.Embedder{
 			Logger:     GinkgoWriter,
 			Compressor: compressor,
 			Composer:   composer,
@@ -57,8 +57,8 @@ var _ = Describe("Emitter", func() {
 		}
 	})
 
-	It("emits the provided source successfully", func() {
-		Expect(emitter.Emit()).To(Succeed())
+	It("embeds the provided source successfully", func() {
+		Expect(embedder.Embed()).To(Succeed())
 		Expect(compressor.CompressCallCount()).To(Equal(1))
 
 		ctx := compressor.CompressArgsForCall(0)
@@ -72,7 +72,7 @@ var _ = Describe("Emitter", func() {
 		It("does not compose it", func() {
 			compressor.CompressReturns(nil, nil)
 
-			Expect(emitter.Emit()).To(Succeed())
+			Expect(embedder.Embed()).To(Succeed())
 			Expect(compressor.CompressCallCount()).To(Equal(1))
 			ctx := compressor.CompressArgsForCall(0)
 			Expect(ctx.FileSystem).To(Equal(fileSystem))
@@ -83,14 +83,14 @@ var _ = Describe("Emitter", func() {
 	Context("when the compressor fails", func() {
 		It("returns the error", func() {
 			compressor.CompressReturns(nil, fmt.Errorf("Oh no!"))
-			Expect(emitter.Emit()).To(MatchError("Oh no!"))
+			Expect(embedder.Embed()).To(MatchError("Oh no!"))
 		})
 	})
 
 	Context("when the composer fails", func() {
 		It("returns the error", func() {
 			composer.ComposeReturns(fmt.Errorf("Oh no!"))
-			Expect(emitter.Emit()).To(MatchError("Oh no!"))
+			Expect(embedder.Embed()).To(MatchError("Oh no!"))
 		})
 	})
 })

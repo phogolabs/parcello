@@ -9,7 +9,7 @@ import (
 
 // ResourceEmbedder is a command that generate compilable resources
 type ResourceEmbedder struct {
-	emitter *parcello.Emitter
+	embedder *parcello.Embedder
 }
 
 // CreateCommand creates a cli.Command that can be used by cli.App.
@@ -43,7 +43,7 @@ func (r *ResourceEmbedder) before(ctx *cli.Context) error {
 
 	_, packageName := filepath.Split(bundleDir)
 
-	r.emitter = &parcello.Emitter{
+	r.embedder = &parcello.Embedder{
 		Logger:     logger(ctx),
 		FileSystem: parcello.Dir(resourceDir),
 		Composer: &parcello.Generator{
@@ -67,7 +67,7 @@ func (r *ResourceEmbedder) before(ctx *cli.Context) error {
 }
 
 func (r *ResourceEmbedder) generate(ctx *cli.Context) error {
-	if err := r.emitter.Emit(); err != nil {
+	if err := r.embedder.Embed(); err != nil {
 		return cli.NewExitError(err.Error(), ErrCodeArg)
 	}
 
