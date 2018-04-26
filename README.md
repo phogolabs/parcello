@@ -68,7 +68,7 @@ $ go generate ./...
 
 The tools will create a `resource.go` file that contains
 all embedded resource in that directory and its
-subdirectories as `tar.gz` archive which is registered in
+subdirectories as `zip` archive which is registered in
 [parcello.ResourceManager](https://github.com/phogolabs/parcello/blob/master/common.go#L6).
 
 You can read the content in the following way:
