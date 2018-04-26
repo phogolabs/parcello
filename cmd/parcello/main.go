@@ -34,34 +34,34 @@ func main() {
 		Flags: []cli.Flag{
 			cli.BoolFlag{
 				Name:  "quiet, q",
-				Usage: "Disable logging",
+				Usage: "disable logging",
 			},
 			cli.BoolFlag{
 				Name:  "recursive, r",
-				Usage: "Embed the resources recursively",
+				Usage: "embed or bundle the resources recursively",
 			},
 			cli.StringFlag{
 				Name:  "resource-dir, d",
-				Usage: "Path to directory",
+				Usage: "path to directory",
 				Value: ".",
 			},
 			cli.StringFlag{
 				Name:  "bundle-path, b",
-				Usage: "Path to the bundle",
+				Usage: "path to the bundle directory or binary",
 				Value: ".",
 			},
 			cli.StringFlag{
 				Name:  "resource-type, t",
-				Usage: "Resource type (bundle or source-code)",
+				Usage: "resource type. supported: bundle, source-code",
 				Value: "source-code",
 			},
 			cli.StringSliceFlag{
 				Name:  "ignore, i",
-				Usage: "Ignore file name",
+				Usage: "ignore file name",
 			},
 			cli.BoolTFlag{
 				Name:  "include-docs",
-				Usage: "Include API documentation in generated source code",
+				Usage: "include API documentation in generated source code",
 			},
 		},
 	}
