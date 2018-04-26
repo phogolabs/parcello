@@ -46,9 +46,9 @@ var _ = Describe("Manager", func() {
 		Expect(manager.Add(resource)).To(Succeed())
 	})
 
-	Describe("NewManager", func() {
+	Describe("NewResourceManager", func() {
 		It("creates new manager successfully", func() {
-			m, err := parcello.NewManager()
+			m, err := parcello.NewResourceManager()
 			Expect(m).NotTo(BeNil())
 			Expect(err).NotTo(HaveOccurred())
 		})

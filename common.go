@@ -23,7 +23,7 @@ func manager() (FileSystemManager, error) {
 		return Dir(dir), nil
 	}
 
-	manager, err := NewManager()
+	manager, err := NewResourceManager()
 	if err != nil {
 		return nil, err
 	}

@@ -35,8 +35,8 @@ type Manager struct {
 	root *Node
 }
 
-// NewManager creates a new manager
-func NewManager() (*Manager, error) {
+// NewResourceManager creates a new manager
+func NewResourceManager() (*Manager, error) {
 	manager := &Manager{
 		root: &Node{Name: "/", IsDir: true},
 	}
