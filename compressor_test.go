@@ -106,6 +106,25 @@ var _ = Describe("ZipCompressor", func() {
 				Expect(reader.File[0].Name).To(Equal("resource/reports/2018.txt"))
 				Expect(reader.File[1].Name).To(Equal("resource/scripts/schema.sql"))
 			})
+
+			It("ignores the whole directory", func() {
+				compressor.Config.IgnorePatterns = []string{"resource/templates"}
+				fileSystem := parcello.Dir("./fixture")
+				ctx := &parcello.CompressorContext{
+					FileSystem: fileSystem,
+				}
+
+				bundle, err := compressor.Compress(ctx)
+				Expect(err).To(BeNil())
+				Expect(bundle).NotTo(BeNil())
+				Expect(bundle.Name).To(Equal("bundle"))
+
+				reader, err := zip.NewReader(bytes.NewReader(bundle.Body), int64(len(bundle.Body)))
+				Expect(err).To(BeNil())
+
+				Expect(reader.File[0].Name).To(Equal("resource/reports/2018.txt"))
+				Expect(reader.File[1].Name).To(Equal("resource/scripts/schema.sql"))
+			})
 		})
 	})
 

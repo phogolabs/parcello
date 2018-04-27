@@ -22,6 +22,7 @@ var _ = Describe("Manager", func() {
 		manager = &parcello.Manager{}
 
 		var err error
+
 		compressor := parcello.ZipCompressor{
 			Config: &parcello.CompressorConfig{
 				Logger:   ioutil.Discard,

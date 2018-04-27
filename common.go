@@ -1,6 +1,9 @@
 package parcello
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 // ResourceManager keeps track of all resources
 var ResourceManager FileSystemManager
@@ -53,4 +56,14 @@ func Root(name string) FileSystemManager {
 	}
 
 	return manager
+}
+
+func match(pattern, path, name string) (bool, error) {
+	matched, err := filepath.Match(pattern, path)
+	if err != nil {
+		return false, err
+	}
+
+	try, _ := filepath.Match(pattern, name)
+	return matched || try, nil
 }

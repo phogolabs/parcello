@@ -100,11 +100,7 @@ func (e *ZipCompressor) write(w io.Writer, ctx *CompressorContext) (int, error) 
 func (e *ZipCompressor) walk(compressor *zip.Writer, fileSystem FileSystem, path string, info os.FileInfo) error {
 	fmt.Fprintln(e.Config.Logger, fmt.Sprintf("Compressing '%s'", path))
 
-	header, err := zip.FileInfoHeader(info)
-	if err != nil {
-		return err
-	}
-
+	header, _ := zip.FileInfoHeader(info)
 	header.Method = zip.Deflate
 	header.Name = path
 
@@ -152,20 +148,14 @@ func (e *ZipCompressor) ignore(path string, info os.FileInfo) error {
 	ignore := append(e.Config.IgnorePatterns, "*.go")
 
 	for _, pattern := range ignore {
-		matched, err := filepath.Match(pattern, path)
+		matched, err := match(pattern, path, info.Name())
+
 		if err != nil {
 			return err
 		}
 
 		if !matched {
-			matched, err = filepath.Match(pattern, info.Name())
-			if err != nil {
-				return err
-			}
-
-			if !matched {
-				continue
-			}
+			continue
 		}
 
 		if info.IsDir() {
