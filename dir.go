@@ -23,8 +23,10 @@ func (d Dir) Open(name string) (ReadOnlyFile, error) {
 func (d Dir) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	dir := filepath.Join(string(d), filepath.Dir(name))
 
-	if err := os.MkdirAll(dir, 0700); err != nil {
-		return nil, err
+	if hasFlag(os.O_CREATE, flag) {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return nil, err
+		}
 	}
 
 	name = filepath.Join(dir, filepath.Base(name))

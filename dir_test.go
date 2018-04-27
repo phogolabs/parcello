@@ -62,7 +62,7 @@ var _ = Describe("Dir", func() {
 		Context("when the underlying file system fails", func() {
 			It("returns an error", func() {
 				dir = parcello.Dir("/hello")
-				file, err := dir.OpenFile("report.txt", os.O_RDONLY, 0)
+				file, err := dir.OpenFile("report.txt", os.O_CREATE, 0)
 				Expect(file).To(BeNil())
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("mkdir /hello: permission denied"))
