@@ -13,6 +13,7 @@ import (
 )
 
 //go:generate counterfeiter -fake-name FileSystem -o ./fake/FileSystem.go . FileSystem
+//go:generate counterfeiter -fake-name FileSystemManager -o ./fake/FileSystemManager.go . FileSystemManager
 //go:generate counterfeiter -fake-name File -o ./fake/File.go . File
 //go:generate counterfeiter -fake-name Composer -o ./fake/Composer.go . Composer
 //go:generate counterfeiter -fake-name Compressor -o ./fake/Compressor.go . Compressor
