@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 )
 
-var _ FileSystem = Dir("")
 var _ FileSystemManager = Dir("")
 
 // Dir implements FileSystem using the native file system restricted to a

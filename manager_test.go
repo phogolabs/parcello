@@ -12,14 +12,14 @@ import (
 	"github.com/phogolabs/parcello"
 )
 
-var _ = Describe("Manager", func() {
+var _ = Describe("ResourceManager", func() {
 	var (
-		manager  *parcello.Manager
+		manager  *parcello.ResourceManager
 		resource []byte
 	)
 
 	BeforeEach(func() {
-		manager = &parcello.Manager{}
+		manager = &parcello.ResourceManager{}
 
 		var err error
 
@@ -62,7 +62,7 @@ var _ = Describe("Manager", func() {
 			})
 		})
 
-		Context("when the resource is not tar.gz", func() {
+		Context("when the resource is not zip", func() {
 			It("returns an error", func() {
 				Expect(manager.Add([]byte("lol"))).To(MatchError("zip: not a valid zip file"))
 			})

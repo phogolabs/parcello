@@ -26,18 +26,17 @@ var (
 	ErrIsDirectory = errors.New("Is directory")
 )
 
-var _ FileSystem = &Manager{}
-var _ FileSystemManager = &Manager{}
+var _ FileSystemManager = &ResourceManager{}
 
-// Manager represents a virtual in memory file system
-type Manager struct {
+// ResourceManager represents a virtual in memory file system
+type ResourceManager struct {
 	rw   sync.RWMutex
 	root *Node
 }
 
 // NewResourceManager creates a new manager
-func NewResourceManager() (*Manager, error) {
-	manager := &Manager{
+func NewResourceManager() (*ResourceManager, error) {
+	manager := &ResourceManager{
 		root: &Node{Name: "/", IsDir: true},
 	}
 
@@ -71,7 +70,7 @@ func NewResourceManager() (*Manager, error) {
 }
 
 // Add adds resource to the manager
-func (m *Manager) Add(binary Binary) error {
+func (m *ResourceManager) Add(binary Binary) error {
 	m.rw.Lock()
 	defer m.rw.Unlock()
 
@@ -87,7 +86,7 @@ func (m *Manager) Add(binary Binary) error {
 	return m.uncompress(reader)
 }
 
-func (m *Manager) uncompress(reader *zip.Reader) error {
+func (m *ResourceManager) uncompress(reader *zip.Reader) error {
 	for _, header := range reader.File {
 		path := split(header.Name)
 		node := add(path, m.root)
@@ -115,10 +114,10 @@ func (m *Manager) uncompress(reader *zip.Reader) error {
 }
 
 // Root returns a sub-manager for given path
-func (m *Manager) Root(name string) (FileSystemManager, error) {
+func (m *ResourceManager) Root(name string) (FileSystemManager, error) {
 	if _, node := find(split(name), nil, m.root); node != nil {
 		if node.IsDir {
-			return &Manager{root: node}, nil
+			return &ResourceManager{root: node}, nil
 		}
 	}
 
@@ -126,12 +125,12 @@ func (m *Manager) Root(name string) (FileSystemManager, error) {
 }
 
 // Open opens an embedded resource for read
-func (m *Manager) Open(name string) (ReadOnlyFile, error) {
+func (m *ResourceManager) Open(name string) (ReadOnlyFile, error) {
 	return m.OpenFile(name, os.O_RDONLY, 0)
 }
 
 // OpenFile is the generalized open call; most users will use Open
-func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
+func (m *ResourceManager) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
 	parent, node, err := m.open(name)
 	if err != nil {
 		return nil, err
@@ -156,7 +155,7 @@ func (m *Manager) OpenFile(name string, flag int, perm os.FileMode) (File, error
 	return newFile(node, flag)
 }
 
-func (m *Manager) open(name string) (*Node, *Node, error) {
+func (m *ResourceManager) open(name string) (*Node, *Node, error) {
 	parent, node := find(split(name), nil, m.root)
 	if node != m.root && parent == nil {
 		return nil, nil, &os.PathError{Op: "open", Path: name, Err: os.ErrNotExist}
@@ -167,7 +166,7 @@ func (m *Manager) open(name string) (*Node, *Node, error) {
 
 // Walk walks the file tree rooted at root, calling walkFn for each file or
 // directory in the tree, including root.
-func (m *Manager) Walk(dir string, fn filepath.WalkFunc) error {
+func (m *ResourceManager) Walk(dir string, fn filepath.WalkFunc) error {
 	if _, node := find(split(dir), nil, m.root); node != nil {
 		return walk(dir, node, fn)
 	}
