@@ -80,15 +80,6 @@ import _ "database"
 file, err := parcello.Open("your_sub_directory_name/your_file_name")
 ```
 
-If you want to work in dev mode, you should set the following environment
-variables:
-
-```console
-$ export PARCELLO_DEV_ENABLED=1
-$ # if the application resource directory is different than the current working directory
-$ export PARCELLO_RESOURCE_DIR=./public
-```
-
 The `parcello` package provides an abstraction of
 [FileSystem](https://godoc.org/github.com/phogolabs/parcello#FileSystem)
 interface:
@@ -113,6 +104,15 @@ That is implemented by the following:
 
 That allows easy replacement of the file system with the bundled resources and
 vice versa.
+
+If you want to work in dev mode, you should set the following environment
+variables before you start your application:
+
+```console
+$ export PARCELLO_DEV_ENABLED=1
+$ # if the application resource directory is different than the current working directory
+$ export PARCELLO_RESOURCE_DIR=./public
+```
 
 Note that downsides of this resource embedding approach are that your compile
 time may increase significantly.
