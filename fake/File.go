@@ -59,6 +59,16 @@ type File struct {
 		result1 int
 		result2 error
 	}
+	ReadAtStub        func(p []byte, off int64) (n int, err error)
+	readAtMutex       sync.RWMutex
+	readAtArgsForCall []struct {
+		p   []byte
+		off int64
+	}
+	readAtReturns struct {
+		result1 int
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -255,6 +265,45 @@ func (fake *File) WriteReturns(result1 int, result2 error) {
 	}{result1, result2}
 }
 
+func (fake *File) ReadAt(p []byte, off int64) (n int, err error) {
+	var pCopy []byte
+	if p != nil {
+		pCopy = make([]byte, len(p))
+		copy(pCopy, p)
+	}
+	fake.readAtMutex.Lock()
+	fake.readAtArgsForCall = append(fake.readAtArgsForCall, struct {
+		p   []byte
+		off int64
+	}{pCopy, off})
+	fake.recordInvocation("ReadAt", []interface{}{pCopy, off})
+	fake.readAtMutex.Unlock()
+	if fake.ReadAtStub != nil {
+		return fake.ReadAtStub(p, off)
+	}
+	return fake.readAtReturns.result1, fake.readAtReturns.result2
+}
+
+func (fake *File) ReadAtCallCount() int {
+	fake.readAtMutex.RLock()
+	defer fake.readAtMutex.RUnlock()
+	return len(fake.readAtArgsForCall)
+}
+
+func (fake *File) ReadAtArgsForCall(i int) ([]byte, int64) {
+	fake.readAtMutex.RLock()
+	defer fake.readAtMutex.RUnlock()
+	return fake.readAtArgsForCall[i].p, fake.readAtArgsForCall[i].off
+}
+
+func (fake *File) ReadAtReturns(result1 int, result2 error) {
+	fake.ReadAtStub = nil
+	fake.readAtReturns = struct {
+		result1 int
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *File) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -270,6 +319,8 @@ func (fake *File) Invocations() map[string][][]interface{} {
 	defer fake.statMutex.RUnlock()
 	fake.writeMutex.RLock()
 	defer fake.writeMutex.RUnlock()
+	fake.readAtMutex.RLock()
+	defer fake.readAtMutex.RUnlock()
 	return fake.invocations
 }
 

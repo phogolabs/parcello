@@ -104,11 +104,7 @@ func (e *ZipCompressor) walk(compressor *zip.Writer, fileSystem FileSystem, path
 	header.Method = zip.Deflate
 	header.Name = path
 
-	writer, err := compressor.CreateHeader(header)
-	if err != nil {
-		return err
-	}
-
+	writer, _ := compressor.CreateHeader(header)
 	resource, err := fileSystem.OpenFile(path, os.O_RDONLY, 0)
 	if err != nil {
 		return err

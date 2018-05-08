@@ -5,17 +5,20 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/kardianos/osext"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/phogolabs/parcello"
+	"github.com/phogolabs/parcello/fake"
 )
 
 var _ = Describe("ResourceManager", func() {
 	var (
 		manager  *parcello.ResourceManager
-		resource []byte
+		resource *parcello.Resource
 	)
 
 	BeforeEach(func() {
@@ -40,7 +43,7 @@ var _ = Describe("ResourceManager", func() {
 		bundle, err := compressor.Compress(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
-		resource = bundle.Body
+		resource = parcello.BinaryResource(bundle.Body)
 	})
 
 	JustBeforeEach(func() {
@@ -48,23 +51,54 @@ var _ = Describe("ResourceManager", func() {
 	})
 
 	Describe("NewResourceManager", func() {
+		var (
+			name       string
+			fileSystem parcello.FileSystem
+		)
+
+		BeforeEach(func() {
+			path, err := osext.Executable()
+			Expect(err).To(Succeed())
+
+			path, name = filepath.Split(path)
+			fileSystem = parcello.Dir(path)
+		})
+
 		It("creates new manager successfully", func() {
-			m, err := parcello.NewResourceManager()
+			m, err := parcello.NewResourceManager(name, fileSystem)
 			Expect(m).NotTo(BeNil())
 			Expect(err).NotTo(HaveOccurred())
+		})
+
+		Context("when file stat fails", func() {
+			BeforeEach(func() {
+				exec := &fake.File{}
+				exec.StatReturns(nil, fmt.Errorf("oh no!"))
+
+				fs := &fake.FileSystem{}
+				fs.OpenFileReturns(exec, nil)
+
+				fileSystem = fs
+			})
+
+			It("returns the error", func() {
+				m, err := parcello.NewResourceManager(name, fileSystem)
+				Expect(m).To(BeNil())
+				Expect(err).To(MatchError("oh no!"))
+			})
 		})
 	})
 
 	Describe("Add", func() {
 		Context("when the resource is added second time", func() {
 			It("returns an error", func() {
-				Expect(manager.Add(resource)).To(MatchError("Invalid path: 'resource/reports/2018.txt'"))
+				Expect(manager.Add(resource)).To(MatchError("invalid path: 'resource/reports/2018.txt'"))
 			})
 		})
 
 		Context("when the resource is not zip", func() {
 			It("returns an error", func() {
-				Expect(manager.Add([]byte("lol"))).To(MatchError("zip: not a valid zip file"))
+				Expect(manager.Add(parcello.BinaryResource([]byte("lol")))).To(MatchError("Couldn't Open As Executable"))
 			})
 
 			It("panics", func() {
@@ -73,9 +107,9 @@ var _ = Describe("ResourceManager", func() {
 		})
 	})
 
-	Describe("Root", func() {
+	Describe("Dir", func() {
 		It("returns a valid sub-manager", func() {
-			group, err := manager.Root("/resource")
+			group, err := manager.Dir("/resource")
 			Expect(err).To(BeNil())
 
 			file, err := group.Open("/reports/2018.txt")
@@ -89,30 +123,9 @@ var _ = Describe("ResourceManager", func() {
 
 		Context("when group is a file not a directory", func() {
 			It("returns an error", func() {
-				group, err := manager.Root("/resource/reports/2018.txt")
+				group, err := manager.Dir("/resource/reports/2018.txt")
 				Expect(group).To(BeNil())
-				Expect(err).To(MatchError("Resource '/resource/reports/2018.txt' not found"))
-			})
-		})
-
-		Context("when the manager is global", func() {
-			It("returns a valid sub-manager", func() {
-				parcello.AddResource(resource)
-				group := parcello.Root("/resource")
-
-				file, err := group.Open("/reports/2018.txt")
-				Expect(file).NotTo(BeNil())
-				Expect(err).NotTo(HaveOccurred())
-
-				data, err := ioutil.ReadAll(file)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(data)).To(Equal("Report 2018\n"))
-			})
-
-			Context("when group is a file not a directory", func() {
-				It("panics", func() {
-					Expect(func() { parcello.Root("/resource/reports/2018.txt") }).To(Panic())
-				})
+				Expect(err).To(MatchError(os.ErrNotExist))
 			})
 		})
 	})
@@ -288,7 +301,7 @@ var _ = Describe("ResourceManager", func() {
 					return nil
 				})
 
-				Expect(err).To(MatchError("Directory '/documents' not found"))
+				Expect(err).To(MatchError(os.ErrNotExist))
 			})
 		})
 
@@ -370,6 +383,65 @@ var _ = Describe("ResourceManager", func() {
 						Expect(err).To(MatchError("Oh no!"))
 					})
 				})
+			})
+		})
+	})
+})
+
+var _ = Describe("DefaultManager", func() {
+	It("creates a new manager successfully", func() {
+		manager := parcello.DefaultManager(osext.Executable)
+		Expect(manager).NotTo(BeNil())
+		_, ok := manager.(*parcello.ResourceManager)
+		Expect(ok).To(BeTrue())
+	})
+
+	Context("when the executable cannot be found", func() {
+		It("panics", func() {
+			fn := func() (string, error) { return "", fmt.Errorf("oh no!") }
+			Expect(func() { parcello.DefaultManager(fn) }).To(Panic())
+		})
+	})
+
+	Context("when the filesystem fails", func() {
+		It("panics", func() {
+			fn := func() (string, error) { return "/i/do/not/exist", nil }
+			Expect(func() { parcello.DefaultManager(fn) }).To(Panic())
+		})
+	})
+
+	Context("when dev mode is enabled", func() {
+		BeforeEach(func() {
+			os.Setenv("PARCELLO_DEV_ENABLED", "1")
+		})
+
+		AfterEach(func() {
+			os.Unsetenv("PARCELLO_DEV_ENABLED")
+		})
+
+		It("creates a new dir manager", func() {
+			manager := parcello.DefaultManager(osext.Executable)
+			Expect(manager).NotTo(BeNil())
+			dir, ok := manager.(parcello.Dir)
+			Expect(ok).To(BeTrue())
+			Expect(string(dir)).To(Equal("."))
+		})
+
+		Context("when the directory is provided", func() {
+			BeforeEach(func() {
+				os.Setenv("PARCELLO_RESOURCE_DIR", "./root")
+			})
+
+			AfterEach(func() {
+				os.Unsetenv("PRACELLO_RESOURCE_DIR")
+			})
+
+			It("creates a new dir manager", func() {
+				manager := parcello.DefaultManager(osext.Executable)
+				Expect(manager).NotTo(BeNil())
+				dir, ok := manager.(parcello.Dir)
+				Expect(ok).To(BeTrue())
+				Expect(string(dir)).To(Equal("./root"))
 			})
 		})
 	})

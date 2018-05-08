@@ -2,7 +2,6 @@ package parcello
 
 import (
 	"archive/zip"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -26,7 +25,25 @@ var (
 	ErrIsDirectory = errors.New("Is directory")
 )
 
-var _ FileSystemManager = &ResourceManager{}
+var (
+	// Manager keeps track of all resources
+	Manager = DefaultManager(osext.Executable)
+	// Make sure the ResourceManager implements the FileSystemManager interface
+	_ FileSystemManager = &ResourceManager{}
+)
+
+// Open opens an embedded resource for read
+func Open(name string) (ReadOnlyFile, error) {
+	return Manager.Open(name)
+}
+
+// AddResource adds resource to the default resource manager
+// Note that the method may panic if the resource not exists
+func AddResource(resource []byte) {
+	if err := Manager.Add(BinaryResource(resource)); err != nil {
+		panic(err)
+	}
+}
 
 // ResourceManager represents a virtual in memory file system
 type ResourceManager struct {
@@ -34,18 +51,33 @@ type ResourceManager struct {
 	root *Node
 }
 
-// NewResourceManager creates a new manager
-func NewResourceManager() (*ResourceManager, error) {
-	manager := &ResourceManager{
-		root: &Node{Name: "/", IsDir: true},
+// DefaultManager creates a FileSystemManager based on whether dev mode is enabled
+func DefaultManager(executable ExecutableFunc) FileSystemManager {
+	mode := os.Getenv("PARCELLO_DEV_ENABLED")
+
+	if mode != "" {
+		return Dir(getenv("PARCELLO_RESOURCE_DIR", "."))
 	}
 
-	path, err := osext.Executable()
+	path, err := executable()
 	if err != nil {
-		return manager, nil
+		panic(err)
 	}
 
-	file, err := os.Open(path)
+	dir, exec := filepath.Split(path)
+	manager, err := NewResourceManager(exec, Dir(dir))
+	if err != nil {
+		panic(err)
+	}
+
+	return manager
+}
+
+// NewResourceManager creates a new manager
+func NewResourceManager(path string, fs FileSystem) (*ResourceManager, error) {
+	manager := &ResourceManager{}
+
+	file, err := fs.OpenFile(path, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -57,20 +89,18 @@ func NewResourceManager() (*ResourceManager, error) {
 		return nil, err
 	}
 
-	reader, err := zipexe.NewReader(file, info.Size())
-	if err != nil {
-		return manager, nil
+	resource := &Resource{
+		Body: file,
+		Size: info.Size(),
 	}
 
-	if err = manager.uncompress(reader); err != nil {
-		return nil, err
-	}
+	_ = manager.Add(resource)
 
 	return manager, nil
 }
 
 // Add adds resource to the manager
-func (m *ResourceManager) Add(binary Binary) error {
+func (m *ResourceManager) Add(resource *Resource) error {
 	m.rw.Lock()
 	defer m.rw.Unlock()
 
@@ -78,7 +108,7 @@ func (m *ResourceManager) Add(binary Binary) error {
 		m.root = &Node{Name: "/", IsDir: true}
 	}
 
-	reader, err := zip.NewReader(bytes.NewReader(binary), int64(len(binary)))
+	reader, err := zipexe.NewReader(resource.Body, resource.Size)
 	if err != nil {
 		return err
 	}
@@ -92,7 +122,7 @@ func (m *ResourceManager) uncompress(reader *zip.Reader) error {
 		node := add(path, m.root)
 
 		if node == m.root || node == nil {
-			return fmt.Errorf("Invalid path: '%s'", header.Name)
+			return fmt.Errorf("invalid path: '%s'", header.Name)
 		}
 
 		file, err := header.Open()
@@ -113,15 +143,15 @@ func (m *ResourceManager) uncompress(reader *zip.Reader) error {
 	return nil
 }
 
-// Root returns a sub-manager for given path
-func (m *ResourceManager) Root(name string) (FileSystemManager, error) {
+// Dir returns a sub-manager for given path
+func (m *ResourceManager) Dir(name string) (FileSystemManager, error) {
 	if _, node := find(split(name), nil, m.root); node != nil {
 		if node.IsDir {
 			return &ResourceManager{root: node}, nil
 		}
 	}
 
-	return nil, fmt.Errorf("Resource '%s' not found", name)
+	return nil, os.ErrNotExist
 }
 
 // Open opens an embedded resource for read
@@ -171,7 +201,7 @@ func (m *ResourceManager) Walk(dir string, fn filepath.WalkFunc) error {
 		return walk(dir, node, fn)
 	}
 
-	return fmt.Errorf("Directory '%s' not found", dir)
+	return os.ErrNotExist
 }
 
 func add(path []string, node *Node) *Node {

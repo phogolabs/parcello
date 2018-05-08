@@ -36,13 +36,13 @@ var _ = Describe("Dir", func() {
 
 	Context("Add", func() {
 		It("adds the resource to the manager", func() {
-			Expect(dir.Add([]byte{})).To(Succeed())
+			Expect(dir.Add(parcello.BinaryResource([]byte{}))).To(Succeed())
 		})
 	})
 
-	Context("Root", func() {
+	Context("Dir", func() {
 		It("creates a sub file system", func() {
-			d, err := dir.Root("root")
+			d, err := dir.Dir("root")
 			Expect(err).To(BeNil())
 			Expect(fmt.Sprintf("%v", d)).To(Equal(filepath.Join(string(dir), "root")))
 		})

@@ -44,12 +44,12 @@ func (d Dir) Walk(dir string, fn filepath.WalkFunc) error {
 	})
 }
 
-// Root returns a sub-manager for given path
-func (d Dir) Root(name string) (FileSystemManager, error) {
+// Dir returns a sub-manager for given path
+func (d Dir) Dir(name string) (FileSystemManager, error) {
 	return Dir(filepath.Join(string(d), name)), nil
 }
 
 // Add adds resource bundle to the dir. (noop)
-func (d Dir) Add(binary Binary) error {
+func (d Dir) Add(resource *Resource) error {
 	return nil
 }

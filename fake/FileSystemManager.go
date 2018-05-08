@@ -40,19 +40,19 @@ type FileSystemManager struct {
 		result1 parcello.File
 		result2 error
 	}
-	RootStub        func(name string) (parcello.FileSystemManager, error)
-	rootMutex       sync.RWMutex
-	rootArgsForCall []struct {
+	DirStub        func(name string) (parcello.FileSystemManager, error)
+	dirMutex       sync.RWMutex
+	dirArgsForCall []struct {
 		name string
 	}
-	rootReturns struct {
+	dirReturns struct {
 		result1 parcello.FileSystemManager
 		result2 error
 	}
-	AddStub        func(binary parcello.Binary) error
+	AddStub        func(resource *parcello.Resource) error
 	addMutex       sync.RWMutex
 	addArgsForCall []struct {
-		binary parcello.Binary
+		resource *parcello.Resource
 	}
 	addReturns struct {
 		result1 error
@@ -162,48 +162,48 @@ func (fake *FileSystemManager) OpenFileReturns(result1 parcello.File, result2 er
 	}{result1, result2}
 }
 
-func (fake *FileSystemManager) Root(name string) (parcello.FileSystemManager, error) {
-	fake.rootMutex.Lock()
-	fake.rootArgsForCall = append(fake.rootArgsForCall, struct {
+func (fake *FileSystemManager) Dir(name string) (parcello.FileSystemManager, error) {
+	fake.dirMutex.Lock()
+	fake.dirArgsForCall = append(fake.dirArgsForCall, struct {
 		name string
 	}{name})
-	fake.recordInvocation("Root", []interface{}{name})
-	fake.rootMutex.Unlock()
-	if fake.RootStub != nil {
-		return fake.RootStub(name)
+	fake.recordInvocation("Dir", []interface{}{name})
+	fake.dirMutex.Unlock()
+	if fake.DirStub != nil {
+		return fake.DirStub(name)
 	}
-	return fake.rootReturns.result1, fake.rootReturns.result2
+	return fake.dirReturns.result1, fake.dirReturns.result2
 }
 
-func (fake *FileSystemManager) RootCallCount() int {
-	fake.rootMutex.RLock()
-	defer fake.rootMutex.RUnlock()
-	return len(fake.rootArgsForCall)
+func (fake *FileSystemManager) DirCallCount() int {
+	fake.dirMutex.RLock()
+	defer fake.dirMutex.RUnlock()
+	return len(fake.dirArgsForCall)
 }
 
-func (fake *FileSystemManager) RootArgsForCall(i int) string {
-	fake.rootMutex.RLock()
-	defer fake.rootMutex.RUnlock()
-	return fake.rootArgsForCall[i].name
+func (fake *FileSystemManager) DirArgsForCall(i int) string {
+	fake.dirMutex.RLock()
+	defer fake.dirMutex.RUnlock()
+	return fake.dirArgsForCall[i].name
 }
 
-func (fake *FileSystemManager) RootReturns(result1 parcello.FileSystemManager, result2 error) {
-	fake.RootStub = nil
-	fake.rootReturns = struct {
+func (fake *FileSystemManager) DirReturns(result1 parcello.FileSystemManager, result2 error) {
+	fake.DirStub = nil
+	fake.dirReturns = struct {
 		result1 parcello.FileSystemManager
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FileSystemManager) Add(binary parcello.Binary) error {
+func (fake *FileSystemManager) Add(resource *parcello.Resource) error {
 	fake.addMutex.Lock()
 	fake.addArgsForCall = append(fake.addArgsForCall, struct {
-		binary parcello.Binary
-	}{binary})
-	fake.recordInvocation("Add", []interface{}{binary})
+		resource *parcello.Resource
+	}{resource})
+	fake.recordInvocation("Add", []interface{}{resource})
 	fake.addMutex.Unlock()
 	if fake.AddStub != nil {
-		return fake.AddStub(binary)
+		return fake.AddStub(resource)
 	}
 	return fake.addReturns.result1
 }
@@ -214,10 +214,10 @@ func (fake *FileSystemManager) AddCallCount() int {
 	return len(fake.addArgsForCall)
 }
 
-func (fake *FileSystemManager) AddArgsForCall(i int) parcello.Binary {
+func (fake *FileSystemManager) AddArgsForCall(i int) *parcello.Resource {
 	fake.addMutex.RLock()
 	defer fake.addMutex.RUnlock()
-	return fake.addArgsForCall[i].binary
+	return fake.addArgsForCall[i].resource
 }
 
 func (fake *FileSystemManager) AddReturns(result1 error) {
@@ -236,8 +236,8 @@ func (fake *FileSystemManager) Invocations() map[string][][]interface{} {
 	defer fake.walkMutex.RUnlock()
 	fake.openFileMutex.RLock()
 	defer fake.openFileMutex.RUnlock()
-	fake.rootMutex.RLock()
-	defer fake.rootMutex.RUnlock()
+	fake.dirMutex.RLock()
+	defer fake.dirMutex.RUnlock()
 	fake.addMutex.RLock()
 	defer fake.addMutex.RUnlock()
 	return fake.invocations

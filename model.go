@@ -1,6 +1,7 @@
 package parcello
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -31,25 +32,49 @@ type FileSystem interface {
 
 // FileSystemManager is a file system that can create sub-file-systems
 type FileSystemManager interface {
+	// FileSystem is the underlying file system
 	FileSystem
-	// Root returns a sub-file-system
-	Root(name string) (FileSystemManager, error)
+	// Dir returns a sub-file-system
+	Dir(name string) (FileSystemManager, error)
 	// Add resource bundle to the manager
-	Add(binary Binary) error
+	Add(resource *Resource) error
 }
 
-// Binary represents a resource blob content
-type Binary = []byte
+// Resource represents a resource
+type Resource struct {
+	// Body of the resource
+	Body io.ReaderAt
+	// Size of the body
+	Size int64
+}
+
+// BinaryResource creates a binary resource
+func BinaryResource(data []byte) *Resource {
+	return &Resource{
+		Body: bytes.NewReader(data),
+		Size: int64(len(data)),
+	}
+}
 
 // ReadOnlyFile is the bundle file
 type ReadOnlyFile = http.File
 
 // File is the bundle file
 type File interface {
+	// Close() error
+	// Read(p []byte) (n int, err error)
+	// Seek(offset int64, whence int) (int64, error)
+	// Readdir(count int) ([]os.FileInfo, error)
+	// Stat() (os.FileInfo, error)
+	// Write(p []byte) (n int, err error)
+	// ReadAt(p []byte, off int64) (n int, err error)
+
 	// A File is returned by a FileSystem's Open method and can be
 	ReadOnlyFile
 	// Writer is the interface that wraps the basic Write method.
 	io.Writer
+	// ReaderAt reads at specific position
+	io.ReaderAt
 }
 
 // Composer composes the resources
@@ -93,7 +118,7 @@ type Node struct {
 	// ModTime returns the last modified time
 	ModTime time.Time
 	// Content of the node
-	Content *Binary
+	Content *[]byte
 	// Children of the node
 	Children []*Node
 }
@@ -183,3 +208,6 @@ func (b *ResourceFile) Readdir(n int) ([]os.FileInfo, error) {
 func (b *ResourceFile) Stat() (os.FileInfo, error) {
 	return &ResourceFileInfo{Node: b.node}, nil
 }
+
+// ExecutableFunc returns the executable path
+type ExecutableFunc func() (string, error)
