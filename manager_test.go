@@ -128,6 +128,36 @@ var _ = Describe("ResourceManager", func() {
 				Expect(err).To(MatchError(os.ErrNotExist))
 			})
 		})
+
+		Context("when the manager is global", func() {
+			var (
+				original parcello.FileSystemManager
+				manager  *fake.FileSystemManager
+			)
+
+			BeforeEach(func() {
+				manager = &fake.FileSystemManager{}
+
+				original = parcello.Manager
+				parcello.Manager = manager
+			})
+
+			AfterEach(func() {
+				parcello.Manager = original
+			})
+
+			It("returns a sub-manager", func() {
+				manager.DirReturns(manager, nil)
+				Expect(parcello.DirAt("/nil")).To(Equal(parcello.Manager))
+			})
+
+			Context("when the directory does not exist", func() {
+				It("panics", func() {
+					manager.DirReturns(nil, fmt.Errorf("oh no!"))
+					Expect(func() { parcello.DirAt("/i/do/not/exist") }).To(Panic())
+				})
+			})
+		})
 	})
 
 	Describe("Open", func() {

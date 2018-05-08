@@ -19,5 +19,5 @@ func main() {
 		panic(err)
 	}
 
-	http.ListenAndServe(":8080", http.FileServer(parcello.Root("/website")))
+	http.ListenAndServe(":8080", http.FileServer(parcello.DirAt("/website")))
 }

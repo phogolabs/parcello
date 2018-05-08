@@ -1,5 +1,5 @@
 hash: d6fd08956cfde5fdc31bef1abf8b3926f7864b4b8f521e6c2cf1e8936e55e5c4
-updated: 2018-04-26T09:39:53.950652+01:00
+updated: 2018-05-08T19:36:40.265564+03:00
 imports:
 - name: github.com/blang/vfs
   version: c14afcac17253ce7418da751ec6b1988790cdc8f
@@ -12,7 +12,7 @@ imports:
 - name: github.com/urfave/cli
   version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
 - name: golang.org/x/tools
-  version: dc06d3e643411517e465276d75b66dbed2898850
+  version: 87723262609ca8fd55d449c027454c29cadefd68
   subpackages:
   - imports
 testImports:
@@ -55,13 +55,13 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/net
-  version: 61147c48b25b599e5b561d2e9c4f3e1ef489ca41
+  version: 640f4622ab692b87c2f3a94265e6f579fe38263d
   subpackages:
   - html
   - html/atom
   - html/charset
 - name: golang.org/x/sys
-  version: 3b87a42e500a6dc65dae1a55d0b641295971163e
+  version: 78d5f264b493f125018180c204871ecf58a2dce1
   subpackages:
   - unix
 - name: golang.org/x/text

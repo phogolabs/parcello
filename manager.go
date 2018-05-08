@@ -33,8 +33,17 @@ var (
 )
 
 // Open opens an embedded resource for read
-func Open(name string) (ReadOnlyFile, error) {
-	return Manager.Open(name)
+func Open(name string) (File, error) {
+	return Manager.OpenFile(name, os.O_RDONLY, 0)
+}
+
+// DirAt returns manager at given path
+func DirAt(path string) FileSystemManager {
+	mngr, err := Manager.Dir(path)
+	if err != nil {
+		panic(err)
+	}
+	return mngr
 }
 
 // AddResource adds resource to the default resource manager
