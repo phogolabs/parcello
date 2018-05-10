@@ -37,8 +37,8 @@ func Open(name string) (File, error) {
 	return Manager.OpenFile(name, os.O_RDONLY, 0)
 }
 
-// DirAt returns manager at given path
-func DirAt(path string) FileSystemManager {
+// ManagerAt returns manager at given path
+func ManagerAt(path string) FileSystemManager {
 	mngr, err := Manager.Dir(path)
 	if err != nil {
 		panic(err)

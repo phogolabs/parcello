@@ -195,13 +195,13 @@ var _ = Describe("ResourceManager", func() {
 
 			It("returns a sub-manager", func() {
 				manager.DirReturns(manager, nil)
-				Expect(parcello.DirAt("/nil")).To(Equal(parcello.Manager))
+				Expect(parcello.ManagerAt("/nil")).To(Equal(parcello.Manager))
 			})
 
 			Context("when the directory does not exist", func() {
 				It("panics", func() {
 					manager.DirReturns(nil, fmt.Errorf("oh no!"))
-					Expect(func() { parcello.DirAt("/i/do/not/exist") }).To(Panic())
+					Expect(func() { parcello.ManagerAt("/i/do/not/exist") }).To(Panic())
 				})
 			})
 		})
