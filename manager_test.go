@@ -1,6 +1,7 @@
 package parcello_test
 
 import (
+	"archive/zip"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	zipexe "github.com/daaku/go.zipexe"
 	"github.com/kardianos/osext"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,11 +21,10 @@ var _ = Describe("ResourceManager", func() {
 	var (
 		manager  *parcello.ResourceManager
 		resource *parcello.Resource
+		bundle   *parcello.Bundle
 	)
 
 	BeforeEach(func() {
-		manager = &parcello.ResourceManager{}
-
 		var err error
 
 		compressor := parcello.ZipCompressor{
@@ -40,13 +41,14 @@ var _ = Describe("ResourceManager", func() {
 			FileSystem: fileSystem,
 		}
 
-		bundle, err := compressor.Compress(ctx)
+		bundle, err = compressor.Compress(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
-		resource = parcello.BinaryResource(bundle.Body)
+		manager = &parcello.ResourceManager{}
 	})
 
 	JustBeforeEach(func() {
+		resource = parcello.BinaryResource(bundle.Body)
 		Expect(manager.Add(resource)).To(Succeed())
 	})
 
@@ -65,7 +67,11 @@ var _ = Describe("ResourceManager", func() {
 		})
 
 		It("creates new manager successfully", func() {
-			m, err := parcello.NewResourceManager(name, fileSystem)
+			cfg := &parcello.ResourceManagerConfig{
+				Path:       name,
+				FileSystem: fileSystem,
+			}
+			m, err := parcello.NewResourceManager(cfg)
 			Expect(m).NotTo(BeNil())
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -82,7 +88,12 @@ var _ = Describe("ResourceManager", func() {
 			})
 
 			It("returns the error", func() {
-				m, err := parcello.NewResourceManager(name, fileSystem)
+				cfg := &parcello.ResourceManagerConfig{
+					Path:       name,
+					FileSystem: fileSystem,
+				}
+
+				m, err := parcello.NewResourceManager(cfg)
 				Expect(m).To(BeNil())
 				Expect(err).To(MatchError("oh no!"))
 			})
@@ -93,6 +104,42 @@ var _ = Describe("ResourceManager", func() {
 		Context("when the resource is added second time", func() {
 			It("returns an error", func() {
 				Expect(manager.Add(resource)).To(MatchError("invalid path: 'resource/reports/2018.txt'"))
+			})
+		})
+
+		Context("when the algorithm is unsupported", func() {
+			JustBeforeEach(func() {
+				manager = &parcello.ResourceManager{}
+				manager.NewReader = func(r io.ReaderAt, s int64) (*zip.Reader, error) {
+					reader, err := zipexe.NewReader(r, s)
+					if err != nil {
+						return nil, err
+					}
+					reader.File[0].FileHeader.Method = 2000
+					return reader, nil
+				}
+			})
+
+			It("returns an error", func() {
+				Expect(manager.Add(resource)).To(MatchError("zip: unsupported compression algorithm"))
+			})
+		})
+
+		Context("when the file is corrupted", func() {
+			JustBeforeEach(func() {
+				manager = &parcello.ResourceManager{}
+				manager.NewReader = func(r io.ReaderAt, s int64) (*zip.Reader, error) {
+					reader, err := zipexe.NewReader(r, s)
+					if err != nil {
+						return nil, err
+					}
+					reader.File[0].FileHeader.CRC32 = 123
+					return reader, nil
+				}
+			})
+
+			It("returns an error", func() {
+				Expect(manager.Add(resource)).To(MatchError("zip: checksum error"))
 			})
 		})
 

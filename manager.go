@@ -54,10 +54,21 @@ func AddResource(resource []byte) {
 	}
 }
 
+// ResourceManagerConfig represents the configuration for Resource Manager
+type ResourceManagerConfig struct {
+	// Path to the archive
+	Path string
+	// FileSystem that stores the archive
+	FileSystem FileSystem
+}
+
 // ResourceManager represents a virtual in memory file system
 type ResourceManager struct {
+	cfg  *ResourceManagerConfig
 	rw   sync.RWMutex
 	root *Node
+	// NewReader creates a new ZIP Reader
+	NewReader func(io.ReaderAt, int64) (*zip.Reader, error)
 }
 
 // DefaultManager creates a FileSystemManager based on whether dev mode is enabled
@@ -73,8 +84,14 @@ func DefaultManager(executable ExecutableFunc) FileSystemManager {
 		panic(err)
 	}
 
-	dir, exec := filepath.Split(path)
-	manager, err := NewResourceManager(exec, Dir(dir))
+	dir, path := filepath.Split(path)
+
+	cfg := &ResourceManagerConfig{
+		Path:       path,
+		FileSystem: Dir(dir),
+	}
+
+	manager, err := NewResourceManager(cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -83,10 +100,10 @@ func DefaultManager(executable ExecutableFunc) FileSystemManager {
 }
 
 // NewResourceManager creates a new manager
-func NewResourceManager(path string, fs FileSystem) (*ResourceManager, error) {
-	manager := &ResourceManager{}
+func NewResourceManager(cfg *ResourceManagerConfig) (*ResourceManager, error) {
+	manager := &ResourceManager{cfg: cfg}
 
-	file, err := fs.OpenFile(path, os.O_RDONLY, 0)
+	file, err := cfg.FileSystem.OpenFile(cfg.Path, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +134,13 @@ func (m *ResourceManager) Add(resource *Resource) error {
 		m.root = &Node{Name: "/", IsDir: true}
 	}
 
-	reader, err := zipexe.NewReader(resource.Body, resource.Size)
+	newReader := zipexe.NewReader
+
+	if m.NewReader != nil {
+		newReader = m.NewReader
+	}
+
+	reader, err := newReader(resource.Body, resource.Size)
 	if err != nil {
 		return err
 	}
