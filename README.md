@@ -66,7 +66,7 @@ When you run:
 $ go generate ./...
 ```
 
-The tools will create a `resource.go` file that contains
+The tools will create a `gen_resource.go` file that contains
 all embedded resource in that directory and its
 subdirectories as `zip` archive which is registered in
 [parcello.ResourceManager](https://github.com/phogolabs/parcello/blob/master/common.go#L6).
@@ -74,7 +74,7 @@ subdirectories as `zip` archive which is registered in
 You can read the content in the following way:
 
 ```golang
-// Import the package that includes 'resource.go'
+// Import the package that includes 'gen_resource.go'
 import _ "database"
 
 file, err := parcello.Open("your_sub_directory_name/your_file_name")
