@@ -8,9 +8,8 @@ before_script:
 
 install:
   - export PATH=$PATH:$HOME/gopath/bin
-  - go get ./...
-  - go install github.com/onsi/ginkgo/ginkgo
-  - go mod verify
+  - go get github.com/onsi/ginkgo/...
+  - go build ./...
 
 script:
   - ginkgo -r -v -covermode=atomic
