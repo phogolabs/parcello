@@ -112,7 +112,7 @@ func embed(ctx *cli.Context) error {
 		Compressor: &parcello.ZipCompressor{
 			Config: &parcello.CompressorConfig{
 				Logger:         logger(ctx),
-				Filename:       "resource",
+				Filename:       "gen_resource",
 				IgnorePatterns: ctx.StringSlice("ignore"),
 				Recurive:       ctx.Bool("recursive"),
 			},
@@ -143,7 +143,7 @@ func bundle(ctx *cli.Context) error {
 		Compressor: &parcello.ZipCompressor{
 			Config: &parcello.CompressorConfig{
 				Logger:         logger(ctx),
-				Filename:       "resource",
+				Filename:       "gen_resource",
 				IgnorePatterns: ctx.StringSlice("ignore"),
 				Recurive:       ctx.Bool("recursive"),
 			},

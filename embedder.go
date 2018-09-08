@@ -32,7 +32,7 @@ func (e *Embedder) Embed() error {
 		return nil
 	}
 
-	fmt.Fprintf(e.Logger, "Embedding %d resource(s) at 'resource.go'\n", bundle.Count)
+	fmt.Fprintf(e.Logger, "Embedding %d resource(s) at 'gen_resource.go'\n", bundle.Count)
 	err = e.Composer.Compose(bundle)
 	return err
 }

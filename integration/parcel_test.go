@@ -53,7 +53,7 @@ var _ = Describe("Parcel", func() {
 		path = filepath.Join(path, "commands.sql")
 		Expect(ioutil.WriteFile(path, []byte("command"), 0700)).To(Succeed())
 
-		resource = filepath.Join(cmd.Dir, "/resource.go")
+		resource = filepath.Join(cmd.Dir, "/gen_resource.go")
 	})
 
 	Describe("Embed", func() {
@@ -163,7 +163,7 @@ var _ = Describe("Parcel", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Eventually(session).Should(gexec.Exit(0))
 
-				resource = filepath.Join(cmd.Dir, "database", "resource.go")
+				resource = filepath.Join(cmd.Dir, "database", "gen_resource.go")
 				Expect(resource).To(BeARegularFile())
 
 				data, err := ioutil.ReadFile(resource)
