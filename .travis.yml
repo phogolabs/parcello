@@ -1,18 +1,18 @@
 language: go
 go:
-  - "1.11.x"
+  - 1.10.x
+  - master
 
 before_script:
   - mysql -e 'CREATE DATABASE gom;'
   - psql -c 'CREATE DATABASE gom;' -U postgres
 
 install:
-  - export PATH=$PATH:$HOME/gopath/bin
-  - go get github.com/onsi/ginkgo/...
-  - go build ./...
+  - env GO111MODULE=on go get github.com/onsi/ginkgo/...
+  - env GO111MODULE=on go build ./...
 
 script:
-  - ginkgo -r -v -covermode=atomic
+  - env GO111MODULE=on ginkgo -r -v -covermode=atomic
 
 after_success:
   - script/cover.sh
