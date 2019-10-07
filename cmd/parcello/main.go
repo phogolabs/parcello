@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/phogolabs/cli"
 	"github.com/phogolabs/parcello"
-	"github.com/urfave/cli"
 )
 
 const (
@@ -21,47 +21,46 @@ const (
 
 func main() {
 	app := &cli.App{
-		Name:                 "parcello",
-		HelpName:             "parcello",
-		Usage:                "Golang Resource Bundler and Embedder",
-		UsageText:            "parcello [global options]",
-		Version:              "0.8",
-		BashComplete:         cli.DefaultAppComplete,
-		EnableBashCompletion: true,
-		Writer:               os.Stdout,
-		ErrWriter:            os.Stderr,
-		Action:               run,
+		Name:      "parcello",
+		HelpName:  "parcello",
+		Usage:     "Golang Resource Bundler and Embedder",
+		UsageText: "parcello [global options]",
+		Version:   "0.8",
+		Writer:    os.Stdout,
+		ErrWriter: os.Stderr,
+		Action:    run,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "quiet, q",
 				Usage: "disable logging",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "recursive, r",
 				Usage: "embed or bundle the resources recursively",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "resource-dir, d",
 				Usage: "path to directory",
 				Value: ".",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "bundle-path, b",
 				Usage: "path to the bundle directory or binary",
 				Value: ".",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "resource-type, t",
 				Usage: "resource type. (supported: bundle, source-code)",
 				Value: "source-code",
 			},
-			cli.StringSliceFlag{
+			&cli.StringSliceFlag{
 				Name:  "ignore, i",
 				Usage: "ignore file name",
 			},
-			cli.BoolTFlag{
+			&cli.BoolFlag{
 				Name:  "include-docs",
 				Usage: "include API documentation in generated source code",
+				Value: true,
 			},
 		},
 	}
@@ -106,7 +105,7 @@ func embed(ctx *cli.Context) error {
 			FileSystem: parcello.Dir(bundlePath),
 			Config: &parcello.GeneratorConfig{
 				Package:     packageName,
-				InlcudeDocs: ctx.BoolT("include-docs"),
+				InlcudeDocs: ctx.Bool("include-docs"),
 			},
 		},
 		Compressor: &parcello.ZipCompressor{
