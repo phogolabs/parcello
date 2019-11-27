@@ -160,7 +160,7 @@ You can check working [example](example).
 
 ## Contributing
 
-We are welcome to any contributions. Just fork the
+We are open for any contributions. Just fork the
 [project](https://github.com/phogolabs/parcello).
 
 *logo made by [Good Wave][logo-author-url] [CC 3.0][logo-license]*
