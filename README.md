@@ -2,7 +2,7 @@
 
 [![Documentation][godoc-img]][godoc-url]
 ![License][license-img]
-[![Build Status][travis-img]][travis-url]
+[![Build Status][action-img]][action-url]
 [![Coverage][codecov-img]][codecov-url]
 [![Go Report Card][report-img]][report-url]
 
@@ -173,8 +173,8 @@ We are open for any contributions. Just fork the
 [parcello-img]: doc/img/logo.png
 [codecov-url]: https://codecov.io/gh/phogolabs/parcello
 [codecov-img]: https://codecov.io/gh/phogolabs/parcello/branch/master/graph/badge.svg
-[travis-img]: https://travis-ci.org/phogolabs/parcello.svg?branch=master
-[travis-url]: https://travis-ci.org/phogolabs/parcello
+[action-img]: https://github.com/phogolabs/parcello/workflows/main/badge.svg
+[action-url]: https://github.com/phogolabs/parcello/actions
 [parcello-url]: https://github.com/phogolabs/parcello
 [godoc-url]: https://godoc.org/github.com/phogolabs/parcello
 [godoc-img]: https://godoc.org/github.com/phogolabs/parcello?status.svg
