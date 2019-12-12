@@ -1,0 +1,73 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  pipeline:
+    name: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+      - name: Set up environment
+        run: echo ::set-env name=VERSION_NUMBER::$(echo ${GITHUB_REF:10})
+      - name: Set up Golang
+        uses: actions/setup-go@v1
+        with:
+          go-version: '1.13.x'
+      - name: Install Golang tools
+        run: go install github.com/mitchellh/gox
+      - name: Build release
+        run: $HOME/go/bin/gox -ldflags "-X main.Version=$VERSION_NUMBER" --output="$GOX_OUTPUT" --osarch="$GOX_OSARCH"  github.com/$GITHUB_REPOSITORY/cmd/parcello
+        env:
+          GOX_OUTPUT: "./build/{{.OS}}/{{.Dir}}_{{.OS}}_{{.Arch}}"
+          GOX_OSARCH: "linux/amd64 linux/386 darwin/amd64 darwin/386 windows/386 windows/amd64"
+      - name: Bundle Linux release
+        run: zip --junk-paths parcello-linux-${{ env.VERSION_NUMBER }}.zip ./build/linux/*
+      - name: Bundle Darwin release
+        run: zip --junk-paths parcello-darwin-${{ env.VERSION_NUMBER }}.zip ./build/darwin/*
+      - name: Bundle Windows release
+        run: zip --junk-paths parcello-windows-${{ env.VERSION_NUMBER }}.zip ./build/windows/*
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Linux release
+        id: upload_release_linux
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./parcello-linux-${{ env.VERSION_NUMBER }}.zip
+          asset_name: parcello-linux-${{ env.VERSION_NUMBER }}.zip
+          asset_content_type: application/zip
+      - name: Upload Darwin release
+        id: upload_release_darwin
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./parcello-darwin-${{ env.VERSION_NUMBER }}.zip
+          asset_name: parcello-darwin-${{ env.VERSION_NUMBER }}.zip
+          asset_content_type: application/zip
+      - name: Upload Windows release
+        id: upload_release_windows
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./parcello-windows-${{ env.VERSION_NUMBER }}.zip
+          asset_name: parcello-windows-${{ env.VERSION_NUMBER }}.zip
+          asset_content_type: application/zip

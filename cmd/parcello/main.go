@@ -14,6 +14,9 @@ import (
 	"github.com/phogolabs/parcello"
 )
 
+// Version represents the version number injected at compile time
+var Version string = "unknown"
+
 const (
 	// ErrCodeArg is returned when an invalid argument is passed to CLI
 	ErrCodeArg = 101
@@ -25,7 +28,7 @@ func main() {
 		HelpName:  "parcello",
 		Usage:     "Golang Resource Bundler and Embedder",
 		UsageText: "parcello [global options]",
-		Version:   "0.8",
+		Version:   Version,
 		Writer:    os.Stdout,
 		ErrWriter: os.Stderr,
 		Action:    run,
