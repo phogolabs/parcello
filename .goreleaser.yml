@@ -1,0 +1,26 @@
+before:
+  hooks:
+    - go mod download
+builds:
+- main: ./cmd/parcello/main.go
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - darwin
+  - windows
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+brews:
+- github:
+    owner: phogolabs
+    name: homebrew-tap
+  name: parcello
+  description: Golang Resource Bundler
+  homepage: https://github.com/phogolabs/parcello
+  test: |
+   system "#{bin}/parcello -v"
