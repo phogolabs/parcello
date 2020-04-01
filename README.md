@@ -60,6 +60,15 @@ package database
 //go:generate parcello -r
 ```
 
+Alternatively, if you don't wish to install the cli for any reason, you can use this `go generate` comment instead:
+
+```golang
+// Package database contains the database artefacts of GOM as embedded resource
+package database
+
+//go:generate go run github.com/phogolabs/parcello/cmd/parcello -r
+```
+
 When you run:
 
 ```console
