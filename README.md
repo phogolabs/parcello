@@ -6,11 +6,11 @@
 [![Coverage][codecov-img]][codecov-url]
 [![Go Report Card][report-img]][report-url]
 
-*Golang Resource Bundler*
+**The tools is depracted. Golang officially supports embedded resources.**
+
+**For more information have a look at [embed](https://golang.org/pkg/embed/).**
 
 [![Parcel][parcello-img]][parcello-url]
-
-## Overview
 
 Parcello is a simple resource manager for Golang that allows embedding assets
 like SQL, bash scripts and images. That allows easy release management by
