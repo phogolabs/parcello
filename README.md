@@ -6,7 +6,7 @@
 [![Coverage][codecov-img]][codecov-url]
 [![Go Report Card][report-img]][report-url]
 
-**The tools is depracted. Golang officially supports embedded resources.**
+**The tool is depracted. Golang officially supports embedded resources.**
 
 **For more information have a look at [embed](https://golang.org/pkg/embed/).**
 
